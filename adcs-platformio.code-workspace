@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "adcs"
+		},
+		{
+			"name": "satellite",
+			"path": "satellite"
+		}
+	],
+	"settings": {}
+}

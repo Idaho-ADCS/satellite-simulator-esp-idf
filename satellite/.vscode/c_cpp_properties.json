@@ -1,27 +1,73 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
 {
     "configurations": [
         {
-            "name": "ESP-IDF",
-            "compilerPath": "C:\\Users\\p-squared\\.espressif\\tools\\xtensa-esp32s2-elf\\esp-2021r1-8.4.0\\xtensa-esp32s2-elf\\bin\\xtensa-esp32s2-elf-gcc.exe",
-            "cStandard": "c11",
-            "cppStandard": "c++17",
+            "name": "PlatformIO",
             "includePath": [
-                "${config:idf.espIdfPath}/components/**",
-                "${config:idf.espIdfPathWin}/components/**",
-                "${config:idf.espAdfPath}/components/**",
-                "${config:idf.espAdfPathWin}/components/**",
-                "${workspaceFolder}/**"
+                "C:/Users/p-squared/ADCS/satellite/include",
+                "C:/Users/p-squared/ADCS/satellite/src",
+                "C:/Users/p-squared/ADCS/satellite/.pio/libdeps/sparkfun_samd21_mini_usb/FreeRTOS_SAMD21/src",
+                "C:/Users/p-squared/.platformio/packages/framework-cmsis/CMSIS/Include",
+                "C:/Users/p-squared/.platformio/packages/framework-cmsis-atmel/CMSIS/Device/ATMEL",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/cores/arduino",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/variants/SparkFun_SAMD_Mini",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/HID",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/I2S/src",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/LilyMini_Guide/src",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/SAMD_AnalogCorrection/src",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/SDU/src",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/SPI",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/USBHost/src",
+                "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/Wire",
+                ""
             ],
             "browse": {
+                "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "${config:idf.espIdfPath}/components",
-                    "${config:idf.espIdfPathWin}/components",
-                    "${config:idf.espAdfPath}/components/**",
-                    "${config:idf.espAdfPathWin}/components/**",
-                    "${workspaceFolder}"
-                ],
-                "limitSymbolsToIncludedHeaders": false
-            }
+                    "C:/Users/p-squared/ADCS/satellite/include",
+                    "C:/Users/p-squared/ADCS/satellite/src",
+                    "C:/Users/p-squared/ADCS/satellite/.pio/libdeps/sparkfun_samd21_mini_usb/FreeRTOS_SAMD21/src",
+                    "C:/Users/p-squared/.platformio/packages/framework-cmsis/CMSIS/Include",
+                    "C:/Users/p-squared/.platformio/packages/framework-cmsis-atmel/CMSIS/Device/ATMEL",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/cores/arduino",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/variants/SparkFun_SAMD_Mini",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/HID",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/I2S/src",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/LilyMini_Guide/src",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/SAMD_AnalogCorrection/src",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/SDU/src",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/SPI",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/USBHost/src",
+                    "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/Wire",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=50203",
+                "ARDUINO_SAMD_ZERO",
+                "__SAMD21G18A__",
+                "ARDUINO=10805",
+                "F_CPU=48000000L",
+                "USBCON",
+                "USB_VID=0x1B4F",
+                "USB_PID=0x8D21",
+                "USB_PRODUCT=\"SparkFun SAMD21\"",
+                "USB_MANUFACTURER=\"SparkFun\"",
+                "ARDUINO_ARCH_SAMD",
+                ""
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "C:/Users/p-squared/.platformio/packages/toolchain-gccarmnoneeabi/bin/arm-none-eabi-gcc.exe",
+            "compilerArgs": [
+                "-mcpu=cortex-m0plus",
+                "-mthumb",
+                ""
+            ]
         }
     ],
     "version": 4

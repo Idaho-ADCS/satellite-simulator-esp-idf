@@ -1,16 +1,5 @@
-/****************************************************************
- * Example1_Basics.ino
- * ICM 20948 Arduino Library Demo
- * Use the default configuration to stream 9-axis IMU data
- * Owen Lyke @ SparkFun Electronics
- * Original Creation Date: April 17 2019
- *
- * Please see License.md for the license information.
- *
- * Distributed as-is; no warranty is given.
- ***************************************************************/
+#include "ICM_20948.h"
 #include <FreeRTOS_SAMD51.h>
-#include "ICM_20948.h" // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20948_IMU
 
 typedef union
 {
@@ -32,12 +21,10 @@ typedef union
 
 #define SERCOM_USB   Serial
 #define SERCOM_UART  Serial1
-#define SERCOM_I2C   Wire // Your desired Wire port.      Used when "USE_SPI" is not defined
-#define AD0_VAL 1		// The value of the last bit of the I2C address.                \
-                       // On the SparkFun 9DoF IMU breakout the default is 1, and when \
-                       // the ADR jumper is closed the value becomes 0
+#define SERCOM_I2C   Wire
+#define AD0_VAL 	 1  // last bit of I2C address
 
-ICM_20948_I2C myICM; // Otherwise create an ICM_20948_I2C object
+ICM_20948_I2C IMU;
 
 uint8_t mode;
 
@@ -59,16 +46,16 @@ void setup()
 	SERCOM_I2C.begin();
 	SERCOM_I2C.setClock(400000);
 
-	// myICM.enableDebugging(); // Uncomment this line to enable helpful debug messages on Serial
+	// IMU.enableDebugging(); // Uncomment this line to enable helpful debug messages on Serial
 
 	bool initialized = false;
 	while (!initialized)
 	{
-		myICM.begin(SERCOM_I2C, AD0_VAL);
+		IMU.begin(SERCOM_I2C, AD0_VAL);
 
 		SERCOM_USB.print(F("Initialization of the sensor returned: "));
-		SERCOM_USB.println(myICM.statusString());
-		if (myICM.status != ICM_20948_Stat_Ok)
+		SERCOM_USB.println(IMU.statusString());
+		if (IMU.status != ICM_20948_Stat_Ok)
 		{
 			SERCOM_USB.println("Trying again...");
 			delay(500);
@@ -78,9 +65,6 @@ void setup()
 			initialized = true;
 		}
 	}
-
-	// pinMode(LED_BUILTIN, OUTPUT);
-	// digitalWrite(LED_BUILTIN, HIGH);
 
 	xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
 	xTaskCreate(readSensors, "Read Sensors", 2048, NULL, 1, NULL);
@@ -95,7 +79,6 @@ static void readUART(void* pvParameters)
 	char message[COMMAND_LEN + 1];
 	
 	char cmd_str[8];
-	char crc_str[8];
 
 	for (int i = 0; i < COMMAND_LEN+1; i++)
 	{
@@ -121,14 +104,10 @@ static void readUART(void* pvParameters)
 					mode = 0;
 				}
 
-				// SERCOM_UART.write(message);
-
 				sprintf(cmd_str, "0x%02x", message[0]);
-				sprintf(crc_str, "%02x", message[1]);
 
 				SERCOM_USB.print("Command received: ");
 				SERCOM_USB.print(cmd_str);
-				// SERCOM_USB.println(crc_str);
 				SERCOM_USB.print("\n");
 
 				if (message[0] == 0xa0)
@@ -150,7 +129,7 @@ static void readUART(void* pvParameters)
 static void readSensors(void* pvParameters)
 {
 	char data[PACKET_LEN + 1];
-	ICM_20948_I2C* sensor_ptr = &myICM;
+	ICM_20948_I2C* sensor_ptr = &IMU;
 
 	for (int i = 0; i < PACKET_LEN+1; i++)
 	{
@@ -167,10 +146,10 @@ static void readSensors(void* pvParameters)
 	{
 		if (mode == 1)
 		{
-			if (myICM.dataReady())
+			if (IMU.dataReady())
 			{
-				myICM.getAGMT();
-				printScaledAGMT(&myICM);
+				IMU.getAGMT();
+				printScaledAGMT(&IMU);
 
 				data[4] = (int8_t) sensor_ptr->magX();
 				data[5] = (int8_t) sensor_ptr->magY();
@@ -192,23 +171,7 @@ static void readSensors(void* pvParameters)
 
 void loop()
 {
-	// if (myICM.dataReady())
-	// {
-	// 	myICM.getAGMT();		 // The values are only updated when you call 'getAGMT'
-	// 							 //    printRawAGMT( myICM.agmt );     // Uncomment this to see the raw values, taken directly from the agmt structure
-	// 	printScaledAGMT(&myICM); // This function takes into account the scale settings from when the measurement was made to calculate the values with units
-	// 	delay(30);
-	// }
-	// else
-	// {
-	// 	SERCOM_USB.println("Waiting for data");
-	// 	delay(500);
-	// }
-
-	// if (SERCOM_UART.available())
-	// {
-	// 	SERCOM_UART.write(SERCOM_UART.read());
-	// }
+	// do nothing
 }
 
 // Below here are some helper functions to print the data nicely!
