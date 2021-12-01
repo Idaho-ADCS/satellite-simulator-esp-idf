@@ -9,11 +9,11 @@
  */
 void clearTEScommand(TEScommand *tes)
 {
-	int i;
-	for (i = 0; i < COMMAND_LEN; i++)
-	{
-		tes->data[i] = 0;
-	}
+    int i;
+    for (i = 0; i < COMMAND_LEN; i++)
+    {
+        tes->data[i] = 0;
+    }
 }
 
 /**
@@ -25,11 +25,11 @@ void clearTEScommand(TEScommand *tes)
  */
 void clearADCSdata(ADCSdata *adcs)
 {
-	int i;
-	for (i = 0; i < PACKET_LEN; i++)
-	{
-		adcs->data[i] = 0;
-	}
+    int i;
+    for (i = 0; i < PACKET_LEN; i++)
+    {
+        adcs->data[i] = 0;
+    }
 }
 
 /**
@@ -44,9 +44,9 @@ void clearADCSdata(ADCSdata *adcs)
  */
 fixed5_3_t floatToFixed(float f)
 {
-	fixed5_3_t fix;
-	fix = (uint8_t)(f * (1 << 3));
-	return fix;
+    fixed5_3_t fix;
+    fix = (uint8_t)(f * (1 << 3));
+    return fix;
 }
 
 /**
@@ -61,7 +61,7 @@ fixed5_3_t floatToFixed(float f)
  */
 float fixedToFloat(fixed5_3_t fix)
 {
-	float f;
-	f = ((float)fix) / (1 << 3);
-	return f;
+    float f;
+    f = ((float)fix) / (1 << 3);
+    return f;
 }

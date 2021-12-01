@@ -67,59 +67,59 @@ void printScaledAGMT(ICM_20948_I2C *sensor);
  */
 void setup()
 {
-	mode = MODE_STANDBY;  // boot into standby mode
+    mode = MODE_STANDBY;  // boot into standby mode
 
 
-	// initialize command and data packets to zeros
-	clearTEScommand(&cmd_packet);
-	clearADCSdata(&data_packet);
+    // initialize command and data packets to zeros
+    clearTEScommand(&cmd_packet);
+    clearADCSdata(&data_packet);
 
-	/**
-	 * Initialize UART connection to satellite
-	 * Baud rate: 115200
-	 * Data bits: 8
-	 * Parity: none
-	 */
-	SERCOM_USB.begin(115200);
-	while (!SERCOM_USB);  // wait for initialization to complete
-	SERCOM_USB.write("USB interface initialized\n");
+    /**
+     * Initialize UART connection to satellite
+     * Baud rate: 115200
+     * Data bits: 8
+     * Parity: none
+     */
+    SERCOM_USB.begin(115200);
+    while (!SERCOM_USB);  // wait for initialization to complete
+    SERCOM_USB.write("USB interface initialized\n");
 
-	/**
-	 * Initialize UART connection to satellite
-	 * Baud rate: 115200
-	 * Data bits: 8
-	 * Parity: odd (1 bit)
-	 */
-	SERCOM_UART.begin(115200, SERIAL_8O1);
-	while (!SERCOM_UART);  // wait for initialization to complete
-	SERCOM_USB.write("UART interface initialized\n");
+    /**
+     * Initialize UART connection to satellite
+     * Baud rate: 115200
+     * Data bits: 8
+     * Parity: odd (1 bit)
+     */
+    SERCOM_UART.begin(115200, SERIAL_8O1);
+    while (!SERCOM_UART);  // wait for initialization to complete
+    SERCOM_USB.write("UART interface initialized\n");
 
-	/**
-	 * Initialize I2C connection to IMU
-	 * Clock: 400 kHz
-	 * IMU address: 0x68
-	 */
-	SERCOM_I2C.begin();
-	SERCOM_I2C.setClock(400000);
-	IMU.begin(SERCOM_I2C, AD0_VAL);
-	while (IMU.status != ICM_20948_Stat_Ok);  // wait for initialization to
-											  // complete
-	SERCOM_USB.write("IMU initialized\n");
+    /**
+     * Initialize I2C connection to IMU
+     * Clock: 400 kHz
+     * IMU address: 0x68
+     */
+    SERCOM_I2C.begin();
+    SERCOM_I2C.setClock(400000);
+    IMU.begin(SERCOM_I2C, AD0_VAL);
+    while (IMU.status != ICM_20948_Stat_Ok);  // wait for initialization to
+                                              // complete
+    SERCOM_USB.write("IMU initialized\n");
 
-	// initialization completed, notify satellite
-	data_packet.status = STATUS_HELLO;
-	// TODO: compute CRC
-	SERCOM_UART.write(data_packet.data, PACKET_LEN);
+    // initialization completed, notify satellite
+    data_packet.status = STATUS_HELLO;
+    // TODO: compute CRC
+    SERCOM_UART.write(data_packet.data, PACKET_LEN);
 
-	// instantiate tasks and start scheduler
-	xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
-	xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
-	SERCOM_USB.write("Tasks created\n");
+    // instantiate tasks and start scheduler
+    xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
+    xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
+    SERCOM_USB.write("Tasks created\n");
 
-	vTaskStartScheduler();
+    vTaskStartScheduler();
 
-	// should never be reached if everything goes right
-	while (1);
+    // should never be reached if everything goes right
+    while (1);
 }
 
 /**
@@ -136,56 +136,56 @@ void setup()
  */
 static void readUART(void *pvParameters)
 {
-	uint8_t bytes_received = 0;  // number of consecutive bytes received from
-								 // satellite - used as index for cmd packet
-								 // char array
-	char cmd_str[8];  // used to print command value to serial monitor
+    uint8_t bytes_received = 0;  // number of consecutive bytes received from
+                                 // satellite - used as index for cmd packet
+                                 // char array
+    char cmd_str[8];  // used to print command value to serial monitor
 
-	while (1)
-	{
-		if (SERCOM_UART.available())  // at least one byte is in the UART
-		{							  // receive buffer
+    while (1)
+    {
+        if (SERCOM_UART.available())  // at least one byte is in the UART
+        {							  // receive buffer
 
-			cmd_packet.data[bytes_received] = SERCOM_UART.read();
-			bytes_received++;
+            cmd_packet.data[bytes_received] = SERCOM_UART.read();
+            bytes_received++;
 
-			if (bytes_received >= COMMAND_LEN)  // full command packet received
-			{
-				// TODO: verify CRC
+            if (bytes_received >= COMMAND_LEN)  // full command packet received
+            {
+                // TODO: verify CRC
 
-				if (cmd_packet.command == COMMAND_TEST)
-				{
-					mode = MODE_TEST;  // enter test mode
-				}
+                if (cmd_packet.command == COMMAND_TEST)
+                {
+                    mode = MODE_TEST;  // enter test mode
+                }
 
-				if (cmd_packet.command == COMMAND_STANDBY)
-				{
-					mode = MODE_STANDBY;  // enter standby mode
-				}
+                if (cmd_packet.command == COMMAND_STANDBY)
+                {
+                    mode = MODE_STANDBY;  // enter standby mode
+                }
 
-				// convert int to string for USB monitoring
-				sprintf(cmd_str, "0x%02x", cmd_packet.command);
+                // convert int to string for USB monitoring
+                sprintf(cmd_str, "0x%02x", cmd_packet.command);
 
-				// print command value to USB
-				SERCOM_USB.print("Command received: ");
-				SERCOM_USB.print(cmd_str);
-				SERCOM_USB.print("\n");
+                // print command value to USB
+                SERCOM_USB.print("Command received: ");
+                SERCOM_USB.print(cmd_str);
+                SERCOM_USB.print("\n");
 
-				if (cmd_packet.command == 0xa0)
-				{
-					SERCOM_USB.println("Entering test mode");
-				}
+                if (cmd_packet.command == 0xa0)
+                {
+                    SERCOM_USB.println("Entering test mode");
+                }
 
-				if (cmd_packet.command == 0xc0)
-				{
-					SERCOM_USB.println("Entering standby mode");
-				}
+                if (cmd_packet.command == 0xc0)
+                {
+                    SERCOM_USB.println("Entering standby mode");
+                }
 
-				// reset index counter to zero for next command
-				bytes_received = 0;
-			}
-		}
-	}
+                // reset index counter to zero for next command
+                bytes_received = 0;
+            }
+        }
+    }
 }
 
 /**
@@ -202,44 +202,44 @@ static void readUART(void *pvParameters)
  */
 static void writeUART(void *pvParameters)
 {
-	ICM_20948_I2C *sensor_ptr = &IMU;  // IMU data can only be accessed through
-									   // a pointer
+    ICM_20948_I2C *sensor_ptr = &IMU;  // IMU data can only be accessed through
+                                       // a pointer
 
-	data_packet.status = STATUS_OK;
+    data_packet.status = STATUS_OK;
 
-	// use static dummy values for voltage, current, and motor speed until we
-	// have a device that can monitor them
-	data_packet.voltage = 0x01;
-	data_packet.current = 0x80;
-	data_packet.speed = 0x00;
+    // use static dummy values for voltage, current, and motor speed until we
+    // have a device that can monitor them
+    data_packet.voltage = 0x01;
+    data_packet.current = 0x80;
+    data_packet.speed = 0x00;
 
-	while (1)
-	{
-		if (mode == MODE_TEST)
-		{
-			if (IMU.dataReady())
-			{
-				IMU.getAGMT();  // acquires data from sensor
+    while (1)
+    {
+        if (mode == MODE_TEST)
+        {
+            if (IMU.dataReady())
+            {
+                IMU.getAGMT();  // acquires data from sensor
 
-				// extract data from IMU object
-				data_packet.magX = (int8_t)sensor_ptr->magX();
-				data_packet.magY = (int8_t)sensor_ptr->magY();
-				data_packet.magZ = (int8_t)sensor_ptr->magZ();
+                // extract data from IMU object
+                data_packet.magX = (int8_t)sensor_ptr->magX();
+                data_packet.magY = (int8_t)sensor_ptr->magY();
+                data_packet.magZ = (int8_t)sensor_ptr->magZ();
 
-				data_packet.gyroX = (fixed5_3_t)sensor_ptr->gyrX();
-				data_packet.gyroY = (fixed5_3_t)sensor_ptr->gyrY();
-				data_packet.gyroZ = (fixed5_3_t)sensor_ptr->gyrZ();
+                data_packet.gyroX = (fixed5_3_t)sensor_ptr->gyrX();
+                data_packet.gyroY = (fixed5_3_t)sensor_ptr->gyrY();
+                data_packet.gyroZ = (fixed5_3_t)sensor_ptr->gyrZ();
 
-				// TODO: compute CRC
+                // TODO: compute CRC
 
-				SERCOM_UART.write(data_packet.data, PACKET_LEN);  // send to TES
-				SERCOM_USB.write("Wrote to UART\n");
-				printScaledAGMT(&IMU);
-			}
-		}
+                SERCOM_UART.write(data_packet.data, PACKET_LEN);  // send to TES
+                SERCOM_USB.write("Wrote to UART\n");
+                printScaledAGMT(&IMU);
+            }
+        }
 
-		vTaskDelay(500 / portTICK_PERIOD_MS);
-	}
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
 }
 
 /**
@@ -253,7 +253,7 @@ static void writeUART(void *pvParameters)
  */
 void loop()
 {
-	// do nothing
+    // do nothing
 }
 
 /* IMU DEMO FUNCTIONS ======================================================= */
@@ -271,47 +271,47 @@ void loop()
  */
 void printPaddedInt16b(int16_t val)
 {
-	if (val > 0)
-	{
-		SERCOM_USB.print(" ");
-		if (val < 10000)
-		{
-			SERCOM_USB.print("0");
-		}
-		if (val < 1000)
-		{
-			SERCOM_USB.print("0");
-		}
-		if (val < 100)
-		{
-			SERCOM_USB.print("0");
-		}
-		if (val < 10)
-		{
-			SERCOM_USB.print("0");
-		}
-	}
-	else
-	{
-		SERCOM_USB.print("-");
-		if (abs(val) < 10000)
-		{
-			SERCOM_USB.print("0");
-		}
-		if (abs(val) < 1000)
-		{
-			SERCOM_USB.print("0");
-		}
-		if (abs(val) < 100)
-		{
-			SERCOM_USB.print("0");
-		}
-		if (abs(val) < 10)
-		{
-			SERCOM_USB.print("0");
-		}
-	}
-	SERCOM_USB.print(abs(val));
+    if (val > 0)
+    {
+        SERCOM_USB.print(" ");
+        if (val < 10000)
+        {
+            SERCOM_USB.print("0");
+        }
+        if (val < 1000)
+        {
+            SERCOM_USB.print("0");
+        }
+        if (val < 100)
+        {
+            SERCOM_USB.print("0");
+        }
+        if (val < 10)
+        {
+            SERCOM_USB.print("0");
+        }
+    }
+    else
+    {
+        SERCOM_USB.print("-");
+        if (abs(val) < 10000)
+        {
+            SERCOM_USB.print("0");
+        }
+        if (abs(val) < 1000)
+        {
+            SERCOM_USB.print("0");
+        }
+        if (abs(val) < 100)
+        {
+            SERCOM_USB.print("0");
+        }
+        if (abs(val) < 10)
+        {
+            SERCOM_USB.print("0");
+        }
+    }
+    SERCOM_USB.print(abs(val));
 }
 
 /**
@@ -327,28 +327,28 @@ void printPaddedInt16b(int16_t val)
  */
 void printRawAGMT(ICM_20948_AGMT_t agmt)
 {
-	SERCOM_USB.print("RAW. Acc [ ");
-	printPaddedInt16b(agmt.acc.axes.x);
-	SERCOM_USB.print(", ");
-	printPaddedInt16b(agmt.acc.axes.y);
-	SERCOM_USB.print(", ");
-	printPaddedInt16b(agmt.acc.axes.z);
-	SERCOM_USB.print(" ], Gyr [ ");
-	printPaddedInt16b(agmt.gyr.axes.x);
-	SERCOM_USB.print(", ");
-	printPaddedInt16b(agmt.gyr.axes.y);
-	SERCOM_USB.print(", ");
-	printPaddedInt16b(agmt.gyr.axes.z);
-	SERCOM_USB.print(" ], Mag [ ");
-	printPaddedInt16b(agmt.mag.axes.x);
-	SERCOM_USB.print(", ");
-	printPaddedInt16b(agmt.mag.axes.y);
-	SERCOM_USB.print(", ");
-	printPaddedInt16b(agmt.mag.axes.z);
-	SERCOM_USB.print(" ], Tmp [ ");
-	printPaddedInt16b(agmt.tmp.val);
-	SERCOM_USB.print(" ]");
-	SERCOM_USB.println();
+    SERCOM_USB.print("RAW. Acc [ ");
+    printPaddedInt16b(agmt.acc.axes.x);
+    SERCOM_USB.print(", ");
+    printPaddedInt16b(agmt.acc.axes.y);
+    SERCOM_USB.print(", ");
+    printPaddedInt16b(agmt.acc.axes.z);
+    SERCOM_USB.print(" ], Gyr [ ");
+    printPaddedInt16b(agmt.gyr.axes.x);
+    SERCOM_USB.print(", ");
+    printPaddedInt16b(agmt.gyr.axes.y);
+    SERCOM_USB.print(", ");
+    printPaddedInt16b(agmt.gyr.axes.z);
+    SERCOM_USB.print(" ], Mag [ ");
+    printPaddedInt16b(agmt.mag.axes.x);
+    SERCOM_USB.print(", ");
+    printPaddedInt16b(agmt.mag.axes.y);
+    SERCOM_USB.print(", ");
+    printPaddedInt16b(agmt.mag.axes.z);
+    SERCOM_USB.print(" ], Tmp [ ");
+    printPaddedInt16b(agmt.tmp.val);
+    SERCOM_USB.print(" ]");
+    SERCOM_USB.println();
 }
 
 /**
@@ -366,43 +366,43 @@ void printRawAGMT(ICM_20948_AGMT_t agmt)
  */
 void printFormattedFloat(float val, uint8_t leading, uint8_t decimals)
 {
-	float aval = abs(val);
-	if (val < 0)
-	{
-		SERCOM_USB.print("-");
-	}
-	else
-	{
-		SERCOM_USB.print(" ");
-	}
-	for (uint8_t indi = 0; indi < leading; indi++)
-	{
-		uint32_t tenpow = 0;
-		if (indi < (leading - 1))
-		{
-			tenpow = 1;
-		}
-		for (uint8_t c = 0; c < (leading - 1 - indi); c++)
-		{
-			tenpow *= 10;
-		}
-		if (aval < tenpow)
-		{
-			SERCOM_USB.print("0");
-		}
-		else
-		{
-			break;
-		}
-	}
-	if (val < 0)
-	{
-		SERCOM_USB.print(-val, decimals);
-	}
-	else
-	{
-		SERCOM_USB.print(val, decimals);
-	}
+    float aval = abs(val);
+    if (val < 0)
+    {
+        SERCOM_USB.print("-");
+    }
+    else
+    {
+        SERCOM_USB.print(" ");
+    }
+    for (uint8_t indi = 0; indi < leading; indi++)
+    {
+        uint32_t tenpow = 0;
+        if (indi < (leading - 1))
+        {
+            tenpow = 1;
+        }
+        for (uint8_t c = 0; c < (leading - 1 - indi); c++)
+        {
+            tenpow *= 10;
+        }
+        if (aval < tenpow)
+        {
+            SERCOM_USB.print("0");
+        }
+        else
+        {
+            break;
+        }
+    }
+    if (val < 0)
+    {
+        SERCOM_USB.print(-val, decimals);
+    }
+    else
+    {
+        SERCOM_USB.print(val, decimals);
+    }
 }
 
 /**
@@ -416,26 +416,26 @@ void printFormattedFloat(float val, uint8_t leading, uint8_t decimals)
  */
 void printScaledAGMT(ICM_20948_I2C *sensor)
 {
-	SERCOM_USB.print("Scaled. Acc (mg) [ ");
-	printFormattedFloat(sensor->accX(), 5, 2);
-	SERCOM_USB.print(", ");
-	printFormattedFloat(sensor->accY(), 5, 2);
-	SERCOM_USB.print(", ");
-	printFormattedFloat(sensor->accZ(), 5, 2);
-	SERCOM_USB.print(" ], Gyr (DPS) [ ");
-	printFormattedFloat(sensor->gyrX(), 5, 2);
-	SERCOM_USB.print(", ");
-	printFormattedFloat(sensor->gyrY(), 5, 2);
-	SERCOM_USB.print(", ");
-	printFormattedFloat(sensor->gyrZ(), 5, 2);
-	SERCOM_USB.print(" ], Mag (uT) [ ");
-	printFormattedFloat(sensor->magX(), 5, 2);
-	SERCOM_USB.print(", ");
-	printFormattedFloat(sensor->magY(), 5, 2);
-	SERCOM_USB.print(", ");
-	printFormattedFloat(sensor->magZ(), 5, 2);
-	SERCOM_USB.print(" ], Tmp (C) [ ");
-	printFormattedFloat(sensor->temp(), 5, 2);
-	SERCOM_USB.print(" ]");
-	SERCOM_USB.println();
+    SERCOM_USB.print("Scaled. Acc (mg) [ ");
+    printFormattedFloat(sensor->accX(), 5, 2);
+    SERCOM_USB.print(", ");
+    printFormattedFloat(sensor->accY(), 5, 2);
+    SERCOM_USB.print(", ");
+    printFormattedFloat(sensor->accZ(), 5, 2);
+    SERCOM_USB.print(" ], Gyr (DPS) [ ");
+    printFormattedFloat(sensor->gyrX(), 5, 2);
+    SERCOM_USB.print(", ");
+    printFormattedFloat(sensor->gyrY(), 5, 2);
+    SERCOM_USB.print(", ");
+    printFormattedFloat(sensor->gyrZ(), 5, 2);
+    SERCOM_USB.print(" ], Mag (uT) [ ");
+    printFormattedFloat(sensor->magX(), 5, 2);
+    SERCOM_USB.print(", ");
+    printFormattedFloat(sensor->magY(), 5, 2);
+    SERCOM_USB.print(", ");
+    printFormattedFloat(sensor->magZ(), 5, 2);
+    SERCOM_USB.print(" ], Tmp (C) [ ");
+    printFormattedFloat(sensor->temp(), 5, 2);
+    SERCOM_USB.print(" ]");
+    SERCOM_USB.println();
 }

@@ -33,13 +33,13 @@ typedef uint8_t fixed5_3_t;
  */
 typedef union
 {
-	char data[COMMAND_LEN];
+    char data[COMMAND_LEN];
 
-	struct
-	{
-		uint8_t command;
-		uint8_t crc;
-	};
+    struct
+    {
+        uint8_t command;
+        uint8_t crc;
+    };
 } TEScommand;
 
 /**
@@ -50,22 +50,22 @@ typedef union
  */
 typedef union
 {
-	char data[PACKET_LEN];
+    char data[PACKET_LEN];
 
-	struct
-	{
-		uint8_t    status;
-		fixed5_3_t voltage;
-		int8_t     current;
-		uint8_t    speed;
-		int8_t     magX;
-		int8_t	   magY;
-		int8_t	   magZ;
-		fixed5_3_t gyroX;
-		fixed5_3_t gyroY;
-		fixed5_3_t gyroZ;
-		uint8_t    crc;
-	};
+    struct
+    {
+        uint8_t    status;
+        fixed5_3_t voltage;
+        int8_t     current;
+        uint8_t    speed;
+        int8_t     magX;
+        int8_t	   magY;
+        int8_t	   magZ;
+        fixed5_3_t gyroX;
+        fixed5_3_t gyroY;
+        fixed5_3_t gyroZ;
+        uint8_t    crc;
+    };
 } ADCSdata;
 
 // zero out command/data packets
