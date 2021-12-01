@@ -1,6 +1,15 @@
 /****************************************************************
 * Based on the Sparkfun provided library for the ICM-20949.
-* Modified by Garrett Wells for a CS senior capstone project
+* Modified by Garrett Wells for a CS senior capstone project. This file provides
+*   only the initialization and setup configuration stuff for the SAMD51. Use with
+*   different hardware may result in unexpected errors or lack of function.
+*
+* USING THIS FILE:
+*       To use the IMU...
+*       1. Call initIMU(), should setup IMU using ICM_20848 library
+*       2. Use library functions to get data (see ICM_20848.h in lib)
+*       3. To print debug data to the serial port there are helper functions in this file.
+*           Make sure you setup Serial first.
 ***************************************************************/
 #include "ICM_20949.h" // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20949_IMU
 #include <Wire.h>
@@ -27,9 +36,9 @@ ICM_20948_I2C myICM; // Otherwise create an ICM_20948_I2C object
 
 /*
     Call this function before attempting to read from the IMU, sets up the
-    I2C interface.
+    I2C interface for the SAMD51
 */
-void init()
+void initIMU()
 {
     #ifdef USE_SPI
         SPI_PORT.begin();
