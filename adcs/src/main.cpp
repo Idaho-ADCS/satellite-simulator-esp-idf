@@ -187,14 +187,14 @@ static void readUART(void *pvParameters)
                 SERCOM_USB.print(cmd_str);
                 SERCOM_USB.print("\n");
 
-                if (cmd_packet.command == 0xa0)
+                if (cmd_packet.command == COMMAND_TEST)
                 {
-                    SERCOM_USB.println("Entering test mode");
+                    SERCOM_USB.print("Entering test mode\n");
                 }
 
-                if (cmd_packet.command == 0xc0)
+                if (cmd_packet.command == COMMAND_STANDBY)
                 {
-                    SERCOM_USB.println("Entering standby mode");
+                    SERCOM_USB.print("Entering standby mode\n");
                 }
 #endif
 
