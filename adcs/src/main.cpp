@@ -3,6 +3,9 @@
 #include <FreeRTOS_SAMD51.h>
 #include <stdint.h>
 
+// if defined, enables debug print statements over USB to the serial monitor
+#define DEBUG
+
 // create more descriptive names for serial interfaces
 #define SERCOM_USB   Serial
 #define SERCOM_UART  Serial1
@@ -69,11 +72,11 @@ void setup()
 {
     mode = MODE_STANDBY;  // boot into standby mode
 
-
     // initialize command and data packets to zeros
     clearTEScommand(&cmd_packet);
     clearADCSdata(&data_packet);
 
+#ifdef DEBUG
     /**
      * Initialize UART connection to satellite
      * Baud rate: 115200
@@ -83,6 +86,7 @@ void setup()
     SERCOM_USB.begin(115200);
     while (!SERCOM_USB);  // wait for initialization to complete
     SERCOM_USB.write("USB interface initialized\n");
+#endif
 
     /**
      * Initialize UART connection to satellite
@@ -92,7 +96,9 @@ void setup()
      */
     SERCOM_UART.begin(115200, SERIAL_8O1);
     while (!SERCOM_UART);  // wait for initialization to complete
+#ifdef DEBUG
     SERCOM_USB.write("UART interface initialized\n");
+#endif
 
     /**
      * Initialize I2C connection to IMU
@@ -104,7 +110,9 @@ void setup()
     IMU.begin(SERCOM_I2C, AD0_VAL);
     while (IMU.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                               // complete
+#ifdef DEBUG
     SERCOM_USB.write("IMU initialized\n");
+#endif
 
     // initialization completed, notify satellite
     data_packet.status = STATUS_HELLO;
@@ -114,7 +122,9 @@ void setup()
     // instantiate tasks and start scheduler
     xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
     xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
+#ifdef DEBUG
     SERCOM_USB.write("Tasks created\n");
+#endif
 
     vTaskStartScheduler();
 
@@ -133,19 +143,24 @@ void setup()
  * pvParameters, so pvParameters must be declared even if it is not used.
  * 
  * @return None
+ * 
+ * TODO: Remove polling and invoke this task using an interrupt instead.
  */
 static void readUART(void *pvParameters)
 {
     uint8_t bytes_received = 0;  // number of consecutive bytes received from
                                  // satellite - used as index for cmd packet
                                  // char array
+#ifdef DEBUG
     char cmd_str[8];  // used to print command value to serial monitor
+#endif
 
     while (1)
     {
         if (SERCOM_UART.available())  // at least one byte is in the UART
         {							  // receive buffer
 
+            // copy one byte out of UART receive buffer
             cmd_packet.data[bytes_received] = SERCOM_UART.read();
             bytes_received++;
 
@@ -163,6 +178,7 @@ static void readUART(void *pvParameters)
                     mode = MODE_STANDBY;  // enter standby mode
                 }
 
+#ifdef DEBUG
                 // convert int to string for USB monitoring
                 sprintf(cmd_str, "0x%02x", cmd_packet.command);
 
@@ -180,6 +196,7 @@ static void readUART(void *pvParameters)
                 {
                     SERCOM_USB.println("Entering standby mode");
                 }
+#endif
 
                 // reset index counter to zero for next command
                 bytes_received = 0;
@@ -233,8 +250,10 @@ static void writeUART(void *pvParameters)
                 // TODO: compute CRC
 
                 SERCOM_UART.write(data_packet.data, PACKET_LEN);  // send to TES
+#ifdef DEBUG
                 SERCOM_USB.write("Wrote to UART\n");
                 printScaledAGMT(&IMU);
+#endif
             }
         }
 
