@@ -85,7 +85,7 @@ void setup()
      */
     SERCOM_USB.begin(115200);
     while (!SERCOM_USB);  // wait for initialization to complete
-    SERCOM_USB.write("USB interface initialized\n");
+    SERCOM_USB.write("USB interface initialized\r\n");
 #endif
 
     /**
@@ -97,13 +97,13 @@ void setup()
     SERCOM_UART.begin(115200, SERIAL_8O1);
     while (!SERCOM_UART);  // wait for initialization to complete
 #ifdef DEBUG
-    SERCOM_USB.write("UART interface initialized\n");
+    SERCOM_USB.write("UART interface initialized\r\n");
 #endif
 
     /**
      * Initialize I2C connection to IMU
      * Clock: 400 kHz
-     * IMU address: 0x68
+     * IMU address: 0x69
      */
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
@@ -111,7 +111,7 @@ void setup()
     while (IMU.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                               // complete
 #ifdef DEBUG
-    SERCOM_USB.write("IMU initialized\n");
+    SERCOM_USB.write("IMU initialized\r\n");
 #endif
 
     // initialization completed, notify satellite
@@ -123,7 +123,7 @@ void setup()
     xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
     xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
 #ifdef DEBUG
-    SERCOM_USB.write("Tasks created\n");
+    SERCOM_USB.write("Tasks created\r\n");
 #endif
 
     vTaskStartScheduler();
@@ -185,16 +185,16 @@ static void readUART(void *pvParameters)
                 // print command value to USB
                 SERCOM_USB.print("Command received: ");
                 SERCOM_USB.print(cmd_str);
-                SERCOM_USB.print("\n");
+                SERCOM_USB.print("\r\n");
 
                 if (cmd_packet.command == COMMAND_TEST)
                 {
-                    SERCOM_USB.print("Entering test mode\n");
+                    SERCOM_USB.print("Entering test mode\r\n");
                 }
 
                 if (cmd_packet.command == COMMAND_STANDBY)
                 {
-                    SERCOM_USB.print("Entering standby mode\n");
+                    SERCOM_USB.print("Entering standby mode\r\n");
                 }
 #endif
 
@@ -226,9 +226,9 @@ static void writeUART(void *pvParameters)
 
     // use static dummy values for voltage, current, and motor speed until we
     // have a device that can monitor them
-    data_packet.voltage = 0x01;
-    data_packet.current = 0x80;
-    data_packet.speed = 0x00;
+    data_packet.voltage = 6;
+    data_packet.current = 500 / 10;
+    data_packet.speed = 1;
 
     while (1)
     {
@@ -251,7 +251,7 @@ static void writeUART(void *pvParameters)
 
                 SERCOM_UART.write(data_packet.data, PACKET_LEN);  // send to TES
 #ifdef DEBUG
-                SERCOM_USB.write("Wrote to UART\n");
+                SERCOM_USB.write("Wrote to UART\r\n");
                 printScaledAGMT(&IMU);
 #endif
             }
