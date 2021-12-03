@@ -6,9 +6,6 @@
 		{
 			"name": "satellite",
 			"path": "satellite"
-		},
-		{
-			"path": "satellite-esp32"
 		}
 	],
 	"settings": {
