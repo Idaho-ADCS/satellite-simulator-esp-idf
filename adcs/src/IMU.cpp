@@ -1,5 +1,5 @@
 /****************************************************************
-* Based on the Sparkfun provided library for the ICM-20949.
+* Based on the Sparkfun provided library for the ICM-20948.
 * Modified by Garrett Wells for a CS senior capstone project. This file provides
 *   only the initialization and setup configuration stuff for the SAMD51. Use with
 *   different hardware may result in unexpected errors or lack of function.
@@ -11,19 +11,16 @@
 *       3. To print debug data to the serial port there are helper functions in this file.
 *           Make sure you setup Serial first.
 ***************************************************************/
-#include "ICM_20949.h" // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20949_IMU
+#include "ICM_20948.h" // Click here to get the library: http://librarymanager/All#SparkFun_ICM_20949_IMU
 #include <Wire.h>
 #include "wiring_private.h"
 
-// Create a new wire interface
-TwoWire myWire(&sercom2, 12, 14);
-
-#define SERIAL_PORT SerialUSB
+#define SERIAL_PORT Serial
 
 #define SPI_PORT SPI // Your desired SPI port.       Used only when "USE_SPI" is defined
 #define CS_PIN 2     // Which pin you connect CS to. Used only when "USE_SPI" is defined
 
-#define WIRE_PORT myWire // Your desired Wire port.      Used when "USE_SPI" is not defined
+#define WIRE_PORT Wire // Your desired Wire port.      Used when "USE_SPI" is not defined
 #define AD0_VAL 1       // The value of the last bit of the I2C address.                \
                         // On the SparkFun 9DoF IMU breakout the default is 1, and when \
                         // the ADR jumper is closed the value becomes 0
@@ -70,6 +67,18 @@ void initIMU()
 ////////////////////////////////////////////////////////////////////////////////
 // Below here are some helper functions to print the data nicely!
 ////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief
+ * This function has something to do with printing IMU data over USB to the
+ * serial monitor. Other than that, I have no idea what it does. It came as part
+ * of the IMU demo code, and printScaledAGMT, which is used to validate data
+ * transmissions, relies on this function.
+ * 
+ * @param[in] val  Signed value to print
+ * 
+ * @return None
+ */
 void printPaddedInt16b(int16_t val)
 {
     if (val > 0)
@@ -115,6 +124,17 @@ void printPaddedInt16b(int16_t val)
     SERIAL_PORT.print(abs(val));
 }
 
+/**
+ * @brief
+ * This function has something to do with printing IMU data over USB to the
+ * serial monitor. Other than that, I have no idea what it does. It came as part
+ * of the IMU demo code, and printScaledAGMT, which is used to validate data
+ * transmissions, relies on this function.
+ * 
+ * @param[in] agmt  An instance of the IMU data object
+ * 
+ * @return None
+ */
 void printRawAGMT(ICM_20948_AGMT_t agmt)
 {
     SERIAL_PORT.print("RAW. Acc [ ");
@@ -141,6 +161,19 @@ void printRawAGMT(ICM_20948_AGMT_t agmt)
     SERIAL_PORT.println();
 }
 
+/**
+ * @brief
+ * This function has something to do with printing IMU data over USB to the
+ * serial monitor. Other than that, I have no idea what it does. It came as part
+ * of the IMU demo code, and printScaledAGMT, which is used to validate data
+ * transmissions, relies on this function.
+ * 
+ * @param[in] val       Value to print
+ * @param[in] leading   Number of digits left of the decimal
+ * @param[in] decimals  Number of digits right of the decimal
+ * 
+ * @return None
+ */
 void printFormattedFloat(float val, uint8_t leading, uint8_t decimals)
 {
     float aval = abs(val);
@@ -182,6 +215,15 @@ void printFormattedFloat(float val, uint8_t leading, uint8_t decimals)
     }
 }
 
+/**
+ * @brief
+ * Prints IMU data over USB to the serial monitor. Converts raw data to a form
+ * that is readable by humans. Came as part of the IMU demo code.
+ * 
+ * @param[in] sensor  Pointer to IMU object
+ * 
+ * @return None
+ */
 #ifdef USE_SPI
 void printScaledAGMT(ICM_20948_SPI *sensor)
 {
