@@ -7,9 +7,6 @@
 #include "ICM_20948.h"
 #include "comm.h"
 
-// if defined, enables debug print statements over USB to the serial monitor
-#define DEBUG
-
 #define SERCOM_USB   Serial
 #define SERCOM_UART  Serial1
 
