@@ -205,7 +205,7 @@ static void writeUART(void *pvParameters)
             }
         }
 
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
