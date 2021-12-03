@@ -11,6 +11,9 @@
 
 /* GLOBAL VARIABLES ========================================================= */
 
+TEScommand cmd_packet;
+ADCSdata data_packet;
+
 /* FUNCTION DECLARATIONS ==================================================== */
 
 // task function declarations
@@ -21,6 +24,9 @@ static void writeUART(void *pvParameters);
 
 void setup()
 {
+	clearTEScommand(&cmd_packet);
+	clearADCSdata(&data_packet);
+
 #ifdef DEBUG
     /**
      * Initialize UART connection to satellite
@@ -72,15 +78,15 @@ void setup()
  */
 static void readUART(void *pvParameters)
 {
-	ADCSdata data_packet;
     uint8_t bytes_received = 0;  // number of consecutive bytes received from
                                  // satellite - used as index for cmd packet
                                  // char array
-#ifdef DEBUG
-    char data_str[8];  // used to print command value to serial monitor
-#endif
 
-	clearADCSdata(&data_packet);
+	float speed;
+
+#ifdef DEBUG
+    char data_str[256];  // used to print command value to serial monitor
+#endif
 
     while (1)
     {
@@ -96,6 +102,8 @@ static void readUART(void *pvParameters)
                 // TODO: verify CRC
 
 #ifdef DEBUG
+				speed = fixedToFloat(data_packet.speed);
+
                 // convert int to string for USB monitoring
                 sprintf(data_str, "%d", data_packet.voltage);
                 // print data value to USB
@@ -106,7 +114,7 @@ static void readUART(void *pvParameters)
 				SERCOM_USB.write(" V; I: ");
                 SERCOM_USB.write(data_str);
 
-				sprintf(data_str, "%d", data_packet.speed);
+				sprintf(data_str, "%2.3f", speed);
 				SERCOM_USB.write(" mA; Speed: ");
                 SERCOM_USB.write(data_str);
 
@@ -157,12 +165,10 @@ static void readUART(void *pvParameters)
  */
 static void writeUART(void *pvParameters)
 {
-	TEScommand cmd_packet;
-	clearTEScommand(&cmd_packet);
-
-    while (1)
+	while (1)
     {
         cmd_packet.command = COMMAND_TEST;
+		clearADCSdata(&data_packet);
 		SERCOM_UART.write(cmd_packet.data, COMMAND_LEN);
 #ifdef DEBUG
 		SERCOM_USB.write("Command sent: test mode\r\n");
@@ -170,6 +176,7 @@ static void writeUART(void *pvParameters)
         vTaskDelay(10000 / portTICK_PERIOD_MS);
 
 		cmd_packet.command = COMMAND_STANDBY;
+		clearADCSdata(&data_packet);
 		SERCOM_UART.write(cmd_packet.data, COMMAND_LEN);
 #ifdef DEBUG
 		SERCOM_USB.write("Command sent: standby mode\r\n");

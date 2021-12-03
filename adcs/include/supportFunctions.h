@@ -7,11 +7,17 @@
 #include "ICM_20948.h"
 #include "comm.h"
 
+// create more descriptive names for serial interfaces
 #define SERCOM_USB   Serial
 #define SERCOM_UART  Serial1
+#define SERCOM_I2C   Wire
+#define AD0_VAL      1  // last bit of I2C address
 
+// descriptive names for mode values
 #define MODE_STANDBY  0
 #define MODE_TEST     1
+
+/* GLOBAL VARIABLES ========================================================= */
 
 /**
  * @brief
@@ -42,9 +48,9 @@ TEScommand cmd_packet;
 ADCSdata data_packet;
 
 //Reads UART and sets it to cmd array if something is there
-void readUART(char* cmd);
+static void readUART(void *pvParameters);
 //Copied from demo (ADD DESCRIPTION)
-void writeUART(void *pvParameters);
+static void writeUART(void *pvParameters);
 //Parses cmd and calls appropriate function
 void doCmd(char* cmd);
 //Reads output of sensors and compiles it into the array

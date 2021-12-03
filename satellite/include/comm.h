@@ -23,7 +23,7 @@
  * floating-point first. Functions that convert float to fixed and back are
  * declared below.
  */
-typedef uint8_t fixed5_3_t;
+typedef int8_t fixed5_3_t;
 
 /**
  * @brief

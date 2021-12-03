@@ -1,4 +1,6 @@
 #include "comm.h"
+#include "supportFunctions.h"
+#include "commandFunctions.h"
 #include "ICM_20948.h"
 #include <FreeRTOS_SAMD51.h>
 #include <stdint.h>
@@ -174,7 +176,7 @@ static void writeUART(void *pvParameters)
     // have a device that can monitor them
     data_packet.voltage = 6;
     data_packet.current = 500 / 10;
-    data_packet.speed = 1;
+    data_packet.speed = floatToFixed(1.0);
 
     while (1)
     {
