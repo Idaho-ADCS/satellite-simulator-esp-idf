@@ -82,8 +82,6 @@ static void readUART(void *pvParameters)
                                  // satellite - used as index for cmd packet
                                  // char array
 
-	float speed;
-
 #ifdef DEBUG
     char data_str[256];  // used to print command value to serial monitor
 #endif
@@ -102,46 +100,34 @@ static void readUART(void *pvParameters)
                 // TODO: verify CRC
 
 #ifdef DEBUG
-				speed = fixedToFloat(data_packet.speed);
-
-                // convert int to string for USB monitoring
-                sprintf(data_str, "%d", data_packet.voltage);
                 // print data value to USB
-                SERCOM_USB.write("V: ");
-                SERCOM_USB.write(data_str);
+                SERCOM_USB.print("V: ");
+                SERCOM_USB.print(data_packet.voltage);
 
-				sprintf(data_str, "%d", data_packet.current * 10);
-				SERCOM_USB.write(" V; I: ");
-                SERCOM_USB.write(data_str);
+				SERCOM_USB.print(" V; I: ");
+                SERCOM_USB.print(data_packet.current * 10);
 
-				sprintf(data_str, "%2.3f", speed);
-				SERCOM_USB.write(" mA; Speed: ");
-                SERCOM_USB.write(data_str);
+				SERCOM_USB.print(" mA; Speed: ");
+                SERCOM_USB.print(fixedToFloat(data_packet.speed));
 
-				sprintf(data_str, "%d", data_packet.magX);
-				SERCOM_USB.write(" RPS; Mag: [");
-                SERCOM_USB.write(data_str);
+				SERCOM_USB.print(" RPS; Mag: [");
+                SERCOM_USB.print(data_packet.magX);
 
-				sprintf(data_str, "%d", data_packet.magY);
-				SERCOM_USB.write(", ");
-                SERCOM_USB.write(data_str);
+				SERCOM_USB.print(", ");
+                SERCOM_USB.print(data_packet.magY);
 
-				sprintf(data_str, "%d", data_packet.magZ);
-				SERCOM_USB.write(", ");
-                SERCOM_USB.write(data_str);
+				SERCOM_USB.print(", ");
+                SERCOM_USB.print(data_packet.magZ);
 
-				sprintf(data_str, "%d", data_packet.gyroX);
-				SERCOM_USB.write("] uT; Gyro: [");
-                SERCOM_USB.write(data_str);
+				SERCOM_USB.print("] uT; Gyro: [");
+                SERCOM_USB.print(fixedToFloat(data_packet.gyroX));
 
-				sprintf(data_str, "%d", data_packet.gyroY);
-				SERCOM_USB.write(", ");
-                SERCOM_USB.write(data_str);
+				SERCOM_USB.print(", ");
+                SERCOM_USB.print(fixedToFloat(data_packet.gyroY));
 
-				sprintf(data_str, "%d", data_packet.gyroZ);
-				SERCOM_USB.write(", ");
-                SERCOM_USB.write(data_str);
-				SERCOM_USB.write("] DPS\r\n");
+				SERCOM_USB.print(", ");
+                SERCOM_USB.print(fixedToFloat(data_packet.gyroZ));
+				SERCOM_USB.print("] DPS\r\n");
 #endif
 
                 // reset index counter to zero for next command

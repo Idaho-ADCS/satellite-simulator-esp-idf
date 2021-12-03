@@ -191,9 +191,9 @@ static void writeUART(void *pvParameters)
                 data_packet.magY = (int8_t)sensor_ptr->magY();
                 data_packet.magZ = (int8_t)sensor_ptr->magZ();
 
-                data_packet.gyroX = (fixed5_3_t)sensor_ptr->gyrX();
-                data_packet.gyroY = (fixed5_3_t)sensor_ptr->gyrY();
-                data_packet.gyroZ = (fixed5_3_t)sensor_ptr->gyrZ();
+                data_packet.gyroX = floatToFixed(sensor_ptr->gyrX());
+                data_packet.gyroY = floatToFixed(sensor_ptr->gyrY());
+                data_packet.gyroZ = floatToFixed(sensor_ptr->gyrZ());
 
                 // TODO: compute CRC
 
