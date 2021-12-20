@@ -1,5 +1,5 @@
 
-#include <Arduino.h>
+// #include <Arduino.h>
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -13,7 +13,8 @@
 		//**************************************************
 
 		// set the error serial port for debugging asserts and crashes
-		void vSetErrorSerial(Stream *serial);
+		// TODO: fix this
+		// void vSetErrorSerial(Stream *serial);
 
 	extern "C"
 	{
