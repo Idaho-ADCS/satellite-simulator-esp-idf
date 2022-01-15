@@ -7,7 +7,15 @@
 * USING THIS FILE:
 *       To use the IMU...
 *       1. Call initIMU(), should setup IMU using ICM_20848 library
-*       2. Use library functions to get data (see ICM_20848.h in lib)
+*       2. Use library functions to get data (see ICM_20848.h in lib). Useful
+            functions below.
+            * getAGMT() reads from sensors and stores values in agmt struct
+            * accX(), accY(), accZ() read only acceleration
+            * magXYZ() read only magnetic values on an axis
+            * gyrXYZ() read only gyro values on axis
+            * temp() read only temperature
+            * sleep() put device into sleep, may take a bit to wake up
+            * lowPower() less time to wake than sleep??
 *       3. To print debug data to the serial port there are helper functions in this file.
 *           Make sure you setup Serial first.
 ***************************************************************/
