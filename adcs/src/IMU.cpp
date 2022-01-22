@@ -76,7 +76,7 @@ void initIMU()
 }
 
 /*
- * Sets the Full scale ranges for the accelerometer and the gyroscope.
+ * Sets the Full scale ranges (FSR) for the accelerometer and the gyroscope.
  */
 void configFSS(){
     // Set full scale ranges for both acc and gyr
