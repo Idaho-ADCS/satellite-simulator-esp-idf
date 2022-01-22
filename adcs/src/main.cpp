@@ -2,6 +2,8 @@
 #include "supportFunctions.h"
 #include "commandFunctions.h"
 #include "ICM_20948.h"
+#include "DRV_10970.h"
+#include "INA209.h"
 #include <FreeRTOS_SAMD51.h>
 #include <stdint.h>
 
@@ -62,6 +64,15 @@ void setup()
     SERCOM_USB.write("IMU initialized\r\n");
 #endif
 
+    // TODO init INA209 with real values
+    INA209 ina209(0x40);
+    ina209.writeCfgReg(14751); // default
+    ina209.writeCal(4096);
+    
+#ifdef DEBUG
+    SERCOM_USB.write("INA209 initialized\r\n");
+#endif
+
     // initialization completed, notify satellite
     data_packet.status = STATUS_HELLO;
     // TODO: compute CRC
@@ -70,6 +81,8 @@ void setup()
     // instantiate tasks and start scheduler
     xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
     xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
+    // TODO: schedule task for INA209 read
+
 #ifdef DEBUG
     SERCOM_USB.write("Tasks created\r\n");
 #endif
