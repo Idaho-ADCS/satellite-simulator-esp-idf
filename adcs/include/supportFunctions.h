@@ -4,6 +4,8 @@
  * but I also added little descriptions anyways -Kristie */
 
 #include <FreeRTOS_SAMD51.h>
+#include "DRV_10970.h"
+#include "INA209.h"
 #include "ICM_20948.h"
 #include "comm.h"
 
@@ -25,7 +27,7 @@
  * Possible values:
  *   MODE_STANDBY
  *   MODE_TEST
- * 
+ *
  * TODO: Add concurrency protections
  */
 uint8_t mode;
@@ -35,6 +37,18 @@ uint8_t mode;
  * IMU object, attached to IMU. Used to read data from IMU.
  */
 ICM_20948_I2C IMU;
+
+/**
+ * @brief
+ * INA209 object
+ */
+INA209 ina209;
+
+/**
+ * @brief
+ * DRV10970 object, connected to the motor driver of the flywheel
+ */
+DRV10970 DRV;
 
 /** @brief
  * Stores a command currently being received from the satellite.
