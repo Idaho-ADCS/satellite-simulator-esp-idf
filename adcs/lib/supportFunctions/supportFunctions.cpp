@@ -8,72 +8,6 @@
 #include "ICM_20948.h"
 #include <stdint.h>
 
-//WIP: Reads UART and sets it to cmd array input if something is there
-void readUART(char *message)
-{
-	//Below is from the demo that Parker created
-	/* The only difference between the demo piece and this is that the while loop was 
-   * removed from the function and moved to the function it was called by */
-	uint8_t bytes_received = 0; // number of consecutive bytes received from
-								// satellite - used as index for cmd packet
-								// char array
-#ifdef DEBUG
-	char cmd_str[8]; // used to print command value to serial monitor
-#endif
-	if (SERCOM_UART.available()) // at least one byte is in the UART
-	{							 // receive buffer
-
-		// copy one byte out of UART receive buffer
-		cmd_packet.data[bytes_received] = SERCOM_UART.read();
-		bytes_received++;
-
-		if (bytes_received >= COMMAND_LEN) // full command packet received
-		{
-			// TODO: verify CRC
-
-			if (cmd_packet.command == COMMAND_TEST)
-			{
-				mode = MODE_TEST; // enter test mode
-			}
-
-			if (cmd_packet.command == COMMAND_STANDBY)
-			{
-				mode = MODE_STANDBY; // enter standby mode
-			}
-
-#ifdef DEBUG
-			// convert int to string for USB monitoring
-			sprintf(cmd_str, "0x%02x", cmd_packet.command);
-
-			// print command value to USB
-			SERCOM_USB.print("Command received: ");
-			SERCOM_USB.print(cmd_str);
-			SERCOM_USB.print("\n");
-
-			if (cmd_packet.command == COMMAND_TEST)
-			{
-				SERCOM_USB.print("Entering test mode\n");
-			}
-
-			if (cmd_packet.command == COMMAND_STANDBY)
-			{
-				SERCOM_USB.print("Entering standby mode\n");
-			}
-#endif
-
-			// reset index counter to zero for next command
-			bytes_received = 0;
-		}
-	}
-	//---End of demo piece------
-	else //If there is nothing in UART, make input something else unused
-	{
-		message[0] = 0x01;
-	}
-
-	return;
-}
-
 //Parses cmd and calls appropriate function
 void doCmd(char *cmd)
 {
@@ -126,62 +60,6 @@ void sendToSystem(int *data)
 void startRotation(int rotations)
 {
 	return;
-}
-
-/**
- * @brief
- * Reads magnetometer and gyroscope values from IMU and writes them to UART
- * every 0.5 seconds while ADCS is in test mode.
- * 
- * @param[in] pvParameters  Unused but required by FreeRTOS. Program will not
- * compile without this parameter. When a task is instantiated from this
- * function, a set of initialization arguments or NULL is passed in as
- * pvParameters, so pvParameters must be declared even if it is not used.
- * 
- * @return None
- */
-static void writeUART(void *pvParameters)
-{
-	ICM_20948_I2C *sensor_ptr = &IMU; // IMU data can only be accessed through
-									  // a pointer
-
-	data_packet.status = STATUS_OK;
-
-	// use static dummy values for voltage, current, and motor speed until we
-	// have a device that can monitor them
-	data_packet.voltage = 0x01;
-	data_packet.current = 0x80;
-	data_packet.speed = 0x00;
-
-	while (1)
-	{
-		if (mode == MODE_TEST)
-		{
-			if (IMU.dataReady())
-			{
-				IMU.getAGMT(); // acquires data from sensor
-
-				// extract data from IMU object
-				data_packet.magX = (int8_t)sensor_ptr->magX();
-				data_packet.magY = (int8_t)sensor_ptr->magY();
-				data_packet.magZ = (int8_t)sensor_ptr->magZ();
-
-				data_packet.gyroX = (fixed5_3_t)sensor_ptr->gyrX();
-				data_packet.gyroY = (fixed5_3_t)sensor_ptr->gyrY();
-				data_packet.gyroZ = (fixed5_3_t)sensor_ptr->gyrZ();
-
-				// TODO: compute CRC
-
-				SERCOM_UART.write(data_packet.data, PACKET_LEN); // send to TES
-#ifdef DEBUG
-				SERCOM_USB.write("Wrote to UART\n");
-				printScaledAGMT(&IMU);
-#endif
-			}
-		}
-
-		vTaskDelay(500 / portTICK_PERIOD_MS);
-	}
 }
 
 void printPaddedInt16b(int16_t val)
