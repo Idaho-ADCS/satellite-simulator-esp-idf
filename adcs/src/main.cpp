@@ -10,7 +10,12 @@
 // if defined, enables debug print statements over USB to the serial monitor
 #define DEBUG
 
-/* FUNCTION DEFINITIONS ===================================================== */
+/* RTOS TASK DECLARATIONS =================================================== */
+
+static void readUART(void *pvParameters);
+static void writeUART(void *pvParameters);
+
+/* "MAIN" =================================================================== */
 
 /**
  * @brief
@@ -92,6 +97,8 @@ void setup()
     // should never be reached if everything goes right
     while (1);
 }
+
+/* RTOS TASK DEFINITIONS ==================================================== */
 
 /**
  * @brief

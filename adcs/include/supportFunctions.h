@@ -61,10 +61,6 @@ TEScommand cmd_packet;
  */
 ADCSdata data_packet;
 
-//Reads UART and sets it to cmd array if something is there
-static void readUART(void *pvParameters);
-//Copied from demo (ADD DESCRIPTION)
-static void writeUART(void *pvParameters);
 //Parses cmd and calls appropriate function
 void doCmd(char *cmd);
 //Reads output of sensors and compiles it into the array
