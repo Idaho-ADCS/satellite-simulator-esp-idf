@@ -14,10 +14,10 @@
  */
 
 // Initialization functions, each should print to serial debug on success/failure
-void init(void);       // init ADCS systems and sensors
-void initIMU(void);    // init IMU
-void initDRV(void);    // init motor driver
-void initINA(void);    // init current monitor
+void init_test(void);       // init ADCS systems and sensors
+void initIMU_test(void);    // init IMU
+void initDRV_test(void);    // init motor driver
+void initINA_test(void);    // init current monitor
 
 // Test functions, each should get input or send value to sensor or subsystem and then read/get feedback and print success/failure
 void testIMU(void);     // test IMU readings to make sure values are plausible
@@ -51,18 +51,18 @@ void loop(){
 /*
  * Init all systems here...
  */
-void init(void){
+void init_test(void){
     Serial.println("------ STARTING SYSTEM INIT ------");
-    initIMU();
-    initDRV();
-    initINA();
+    initIMU_test();
+    initDRV_test();
+    initINA_test();
     Serial.println("------ FINISHING SYSTEM INIT ------");
 }
 
 /*
  * Init the IMU connection over the I2C interface
  */
-void initIMU(void){
+void initIMU_test(void){
     /**
      * Initialize I2C connection to IMU
      * Clock: 400 kHz
@@ -82,7 +82,7 @@ void initIMU(void){
 /*
  * Init the motor driver for the flywheel
  */
-void initDRV(void){
+void initDRV_test(void){
     if(DRV_FG == 0 || DRV_FR == 0 || DRV_BRKMOD == 0 || DRV_PWM == 0 || DRV_RD == 0){
         Serial.println("INIT DRV10970 [FAILED]\n\t invalid pinout");
 
@@ -100,12 +100,12 @@ void initDRV(void){
 /*
  * Init the INA209 current sensor for monitoring system draw
  */
-void initINA(void){
+void initINA_test(void){
     // TODO init INA209 with real values, defaults are for 32V system
     long int t0 = millis();
     ina209 = new INA209(0x40);
-    ina209.writeCfgReg(14751); // default
-    ina209.writeCal(4096);
+    ina209->writeCfgReg(14751); // default
+    ina209->writeCal(4096);
     long int cT = millis();
     Serial.print("INIT INA209 [SUCCESS] in ");
     Serial.print(cT - t0);
@@ -117,7 +117,7 @@ void initINA(void){
  */
 void testIMU(void){
     Serial.println("\tIMU TEST");
-    IMU.readScaledAGMT();
+    printScaledAGMT(&IMU);
     Serial.println("");
 }
 
@@ -128,20 +128,20 @@ void testDRV(void){
     Serial.println("\tDRV10970 TEST");
 
     Serial.println("PWM ~ 10%");
-    DRV.run(FWD, 0.1*255); // start at 10%
+    DRV->run(FWD, 0.1*255); // start at 10%
     const int duration = 10000; // 10s
     volatile long int t0 = millis();
     while(millis() - t0 < duration){/*do nothing*/}
 
     Serial.println("PWM ~ 20%");
     t0 = millis();
-    DRV.run(FWD, 0.2*255);
+    DRV->run(FWD, 0.2*255);
     while(millis() - t0 < duration){/*do nothing*/}
 
     // TODO: read the spindle rpm
 
     Serial.println("\tstopping DRV10970");
-    DRV.stop();
+    DRV->stop();
     Serial.println("\tDRV10970 stopped");
 
 }
@@ -152,6 +152,6 @@ void testDRV(void){
 void testINA(void){
     Serial.println("\tINA209 TEST");
     Serial.print("\t\tINA209 current (");
-    Serial.print(ina209.current())
+    Serial.print(ina209->current());
     Serial.println(") Amps");
 }
