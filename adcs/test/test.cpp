@@ -30,6 +30,7 @@ void testINA(void);     // measure the draw of the system, should be non-zero
 void setup(){
     // start serial debug
     Serial.begin(115200);
+    while(!Serial){;}
 
     init(); // init all ADCS systems
 
@@ -40,7 +41,10 @@ void setup(){
  */
 void loop(){
     Serial.println("------ START TESTING SUBSYSTEMS ------");
-    // TODO: test IMU, values back should be close to zero if not moving
+    // Test IMU, values back should be close to zero if not moving
+    testIMU();
+    testDRV();
+    testINA();
     Serial.println("------ END TESTING SUBSYSTEMS ------\n");
 }
 
