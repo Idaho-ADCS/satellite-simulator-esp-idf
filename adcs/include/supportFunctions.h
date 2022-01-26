@@ -10,14 +10,14 @@
 #include "comm.h"
 
 // create more descriptive names for serial interfaces
-#define SERCOM_USB   Serial
-#define SERCOM_UART  Serial1
-#define SERCOM_I2C   Wire
-#define AD0_VAL      1  // last bit of I2C address
+#define SERCOM_USB Serial
+#define SERCOM_UART Serial1
+#define SERCOM_I2C Wire
+#define AD0_VAL 1 // last bit of I2C address
 
 // descriptive names for mode values
-#define MODE_STANDBY  0
-#define MODE_TEST     1
+#define MODE_STANDBY 0
+#define MODE_TEST 1
 
 /* GLOBAL VARIABLES ========================================================= */
 
@@ -66,11 +66,11 @@ static void readUART(void *pvParameters);
 //Copied from demo (ADD DESCRIPTION)
 static void writeUART(void *pvParameters);
 //Parses cmd and calls appropriate function
-void doCmd(char* cmd);
+void doCmd(char *cmd);
 //Reads output of sensors and compiles it into the array
-void getData(int* data);
+void getData(int *data);
 //Sends array data to main satellite system
-void sendToSystem(int* data);
+void sendToSystem(int *data);
 //Runs motors for a certain number of rotations
 void startRotation(int rotations);
 

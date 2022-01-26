@@ -6,4 +6,4 @@ void testFun();
 //This function has the satellite do nothing until something is in UART
 void standby();
 //This corrdinates the satellite's rotation
-void orient(char* direction);
+void orient(const char *direction);
