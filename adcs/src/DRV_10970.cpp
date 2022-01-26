@@ -7,9 +7,8 @@
  * Provides a configurable interface for working with the DRV 10970 motor driver. Initially written for University of Idaho senior capstone 2022 for use by the
  * Attitude adjustment team working for NASA.
  ****************************************************************/
-#include "DRV_10970.h"
 
-DRV10970::DRV10970(int fg, int fr, int brkmod, int pwm, int rd){
+void DRV10970::DRV10970(int fg, int fr, int brkmod, int pwm, int rd){
     FG = fg;            // frequency indication pin
     FR = fr;            // motor direction control
     BRKMOD = brkmod;    // brake mode setting pin
@@ -49,8 +48,8 @@ void DRV10970::stop(){
  * Read the RPM of the spindle using the FG pin to measure frequency.
  */
 int DRV10970::readRPM(){
-    long int t0 = millis(); // read start time
-    long int cT = millis(); // current time
+    unsigned long int t0 = millis(); // read start time
+    unsigned long int cT = millis(); // current time
     int gap = 10;                    // milliseconds to measure for
     int toggles = 0;                 // set number of electrical toggles
     int state = digitalRead(FG);     // state variable

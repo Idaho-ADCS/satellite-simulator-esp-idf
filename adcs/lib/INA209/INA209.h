@@ -18,17 +18,16 @@
 #define INA209_H
 
 #include <Arduino.h>
-#include <Wire.h>
+#include <Wire.h> 		
 
 class INA209 {
 	int i2c_addr;
 	int p_addr;
-private:
+private: 
 	word readWord();
 	void writeWord(int p_address, word wordToW);
-	void pointReg(int p_address);
+	void pointReg(int p_address);	
 public:
-	INA209(void){}
 	INA209(int address);
 	~INA209();
 	word readCfgReg();
