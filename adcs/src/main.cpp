@@ -64,7 +64,7 @@ void setup()
     SERCOM_USB.write("IMU initialized\r\n");
 #endif
 
-    // TODO init INA209 with real values
+    // TODO init INA209 with real values, defaults are for 32V system
     INA209 ina209(0x40);
     ina209.writeCfgReg(14751); // default
     ina209.writeCal(4096);
