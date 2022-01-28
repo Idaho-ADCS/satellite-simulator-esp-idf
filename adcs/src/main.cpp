@@ -31,6 +31,9 @@ void setup()
     clearTEScommand(&cmd_packet);
     clearADCSdata(&data_packet);
 
+	pinMode(LED_BUILTIN, OUTPUT);
+	digitalWrite(LED_BUILTIN, HIGH);
+
 #ifdef DEBUG
     /**
      * Initialize UART connection to satellite
@@ -62,15 +65,23 @@ void setup()
      */
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
-    IMU.begin(SERCOM_I2C, AD0_VAL);
-    while (IMU.status != ICM_20948_Stat_Ok);  // wait for initialization to
-                                              // complete
+
+    IMU1.begin(SERCOM_I2C, 0);
+    while (IMU1.status != ICM_20948_Stat_Ok);  // wait for initialization to
+                                               // complete
 #ifdef DEBUG
-    SERCOM_USB.write("IMU initialized\r\n");
+    SERCOM_USB.write("IMU1 initialized\r\n");
+#endif
+
+    IMU2.begin(SERCOM_I2C, 1);
+    while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
+                                               // complete
+#ifdef DEBUG
+    SERCOM_USB.write("IMU2 initialized\r\n");
 #endif
 
     // TODO init INA209 with real values, defaults are for 32V system
-    INA209 ina209(0x40);
+    INA209 ina209(0x80);
     ina209.writeCfgReg(14751); // default
     ina209.writeCal(4096);
     
@@ -187,8 +198,10 @@ static void readUART(void *pvParameters)
  */
 static void writeUART(void *pvParameters)
 {
-    ICM_20948_I2C *sensor_ptr = &IMU;  // IMU data can only be accessed through
-                                       // a pointer
+    ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
+                                        // a pointer
+	ICM_20948_I2C *sensor_ptr2 = &IMU2; // IMU data can only be accessed through
+                                        // a pointer
 
     data_packet.status = STATUS_OK;
 
@@ -202,27 +215,38 @@ static void writeUART(void *pvParameters)
     {
         if (mode == MODE_TEST)
         {
-            if (IMU.dataReady())
+            if (IMU1.dataReady())
             {
-                IMU.getAGMT();  // acquires data from sensor
+                IMU1.getAGMT();  // acquires data from sensor
+			}
 
-                // extract data from IMU object
-                data_packet.magX = (int8_t)sensor_ptr->magX();
-                data_packet.magY = (int8_t)sensor_ptr->magY();
-                data_packet.magZ = (int8_t)sensor_ptr->magZ();
+			if (IMU2.dataReady())
+			{
+				IMU2.getAGMT();
+			}
 
-                data_packet.gyroX = floatToFixed(sensor_ptr->gyrX());
-                data_packet.gyroY = floatToFixed(sensor_ptr->gyrY());
-                data_packet.gyroZ = floatToFixed(sensor_ptr->gyrZ());
+			// extract data from IMU object
+			data_packet.magX = (int8_t)((sensor_ptr1->magX() +
+										 sensor_ptr2->magX()) / 2);
+			data_packet.magY = (int8_t)((sensor_ptr1->magY() +
+										 sensor_ptr2->magY()) / 2);
+			data_packet.magZ = (int8_t)((sensor_ptr1->magZ() +
+										 sensor_ptr2->magZ()) / 2);
 
-                // TODO: compute CRC
+			data_packet.gyroX = floatToFixed(((sensor_ptr1->gyrX() +
+											   sensor_ptr2->gyrX()) / 2));
+			data_packet.gyroY = floatToFixed(((sensor_ptr1->gyrY() +
+											   sensor_ptr2->gyrY()) / 2));
+			data_packet.gyroZ = floatToFixed(((sensor_ptr1->gyrZ() +
+											   sensor_ptr2->gyrZ()) / 2));
 
-                SERCOM_UART.write(data_packet.data, PACKET_LEN);  // send to TES
+			// TODO: compute CRC
+
+			SERCOM_UART.write(data_packet.data, PACKET_LEN);  // send to TES
 #ifdef DEBUG
-                SERCOM_USB.write("Wrote to UART\r\n");
-                printScaledAGMT(&IMU);
+			SERCOM_USB.write("Wrote to UART\r\n");
+			printScaledAGMT(&IMU1);
 #endif
-            }
         }
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);

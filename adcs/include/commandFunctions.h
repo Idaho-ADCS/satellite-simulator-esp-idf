@@ -1,3 +1,5 @@
+#pragma once
+
 /* These are the main functionalies and/or processes, they rely on the support
  * functions (located in supportFunctions.cpp) to properally execute */
 

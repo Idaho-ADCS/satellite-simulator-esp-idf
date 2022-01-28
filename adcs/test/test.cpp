@@ -71,10 +71,18 @@ void initIMU(void){
     long int t0 = millis();
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
-    IMU.begin(SERCOM_I2C, AD0_VAL);
-    while (IMU.status != ICM_20948_Stat_Ok);  // wait for initialization to
+
+    IMU1.begin(SERCOM_I2C, 1);
+    while (IMU1.status != ICM_20948_Stat_Ok);  // wait for initialization to
     long int cT = millis();
-    Serial.print("INIT IMU [SUCCESS] in ");
+    Serial.print("INIT IMU1 [SUCCESS] in ");
+    Serial.print(cT - t0);
+    Serial.println(" ms");
+
+	IMU2.begin(SERCOM_I2C, 1);
+    while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
+    long int cT = millis();
+    Serial.print("INIT IMU2 [SUCCESS] in ");
     Serial.print(cT - t0);
     Serial.println(" ms");
 }
@@ -117,7 +125,8 @@ void initINA(void){
  */
 void testIMU(void){
     Serial.println("\tIMU TEST");
-    IMU.readScaledAGMT();
+    IMU1.readScaledAGMT();
+	IMU2.readScaledAGMT();
     Serial.println("");
 }
 

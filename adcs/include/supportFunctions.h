@@ -1,3 +1,5 @@
+#pragma once
+
 /* These are functions that support the main command functions in one way
  * or another they are called upon in the commandFunctions.cpp file */
 /* I tried to make these as self-explanatory as possible by name
@@ -13,7 +15,6 @@
 #define SERCOM_USB Serial
 #define SERCOM_UART Serial1
 #define SERCOM_I2C Wire
-#define AD0_VAL 1 // last bit of I2C address
 
 // descriptive names for mode values
 #define MODE_STANDBY 0
@@ -36,7 +37,8 @@ uint8_t mode;
  * @brief
  * IMU object, attached to IMU. Used to read data from IMU.
  */
-ICM_20948_I2C IMU;
+ICM_20948_I2C IMU1;
+ICM_20948_I2C IMU2;
 
 /**
  * @brief
