@@ -44,13 +44,13 @@ ICM_20948_I2C IMU2;
  * @brief
  * INA209 object
  */
-INA209 ina209;
+INA209* ina209;
 
 /**
  * @brief
  * DRV10970 object, connected to the motor driver of the flywheel
  */
-DRV10970 DRV;
+DRV10970* DRV;
 
 /** @brief
  * Stores a command currently being received from the satellite.
