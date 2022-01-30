@@ -1,14 +1,42 @@
+// Our own headers
 #include "comm.h"
+#include "sensors.h"
 #include "supportFunctions.h"
 #include "commandFunctions.h"
-#include "ICM_20948.h"
+
+// Arduino library headers
 #include "DRV_10970.h"
 #include "INA209.h"
+#include "ICM_20948.h"
 #include <FreeRTOS_SAMD51.h>
+
+// Standard C/C++ library headers
 #include <stdint.h>
 
 // if defined, enables debug print statements over USB to the serial monitor
 #define DEBUG
+
+/* NON-RTOS GLOBAL VARIABLES ================================================ */
+
+/**
+ * @brief
+ * IMU objects, attached to IMUs. Used to read data from IMUs.
+ */
+ICM_20948_I2C IMU1;
+#ifdef TWO_IMUS
+ICM_20948_I2C IMU2;
+#endif
+
+/* RTOS TASK GLOBAL VARIABLES =============================================== */
+
+/**
+ * @brief
+ * FreeRTOS queue that stores the current mode of the ADCS.
+ * Possible values:
+ *   MODE_STANDBY (0)
+ *   MODE_TEST    (1)
+ */
+QueueHandle_t modeQ;
 
 /* RTOS TASK DECLARATIONS =================================================== */
 
@@ -25,18 +53,34 @@ static void writeUART(void *pvParameters);
  */
 void setup()
 {
-    mode = MODE_STANDBY;  // boot into standby mode
+	/**
+	 * @brief
+	 * INA209 object
+	 */
+	// INA209* ina209;
+	INA209 ina209(0x80);
 
-    // initialize command and data packets to zeros
-    clearTEScommand(&cmd_packet);
-    clearADCSdata(&data_packet);
+	/**
+	 * @brief
+	 * DRV10970 object, connected to the motor driver of the flywheel
+	 */
+	DRV10970* DRV;
 
+	/**
+	 * Create a counting semaphore with a maximum value of 1 and an initial
+	 * value of 0. Starts ADCS in standby mode.
+	 */
+	modeQ = xQueueCreate(1, sizeof(uint8_t));
+	uint8_t mode = 0;
+	xQueueSend(modeQ, (void*)&mode, (TickType_t)0);
+
+	// enable LED
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, HIGH);
 
 #ifdef DEBUG
     /**
-     * Initialize UART connection to satellite
+     * Initialize USB connection to computer. Used to print debug messages.
      * Baud rate: 115200
      * Data bits: 8
      * Parity: none
@@ -59,29 +103,37 @@ void setup()
 #endif
 
     /**
-     * Initialize I2C connection to IMU
+     * Initialize I2C network
      * Clock: 400 kHz
-     * IMU address: 0x69
      */
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
 
-    IMU1.begin(SERCOM_I2C, 0);
+	/**
+	 * Initialize first IMU
+	 * Address: 0x68
+	 */
+    IMU1.begin(SERCOM_I2C, AD0_VAL);
     while (IMU1.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                                // complete
 #ifdef DEBUG
     SERCOM_USB.write("IMU1 initialized\r\n");
 #endif
 
-    IMU2.begin(SERCOM_I2C, 1);
+#ifdef TWO_IMUS
+	/**
+	 * Initialize second IMU
+	 * Address: 0x69
+	 */
+    IMU2.begin(SERCOM_I2C, (~AD0_VAL)&1);
     while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                                // complete
-#ifdef DEBUG
+	#ifdef DEBUG
     SERCOM_USB.write("IMU2 initialized\r\n");
+	#endif
 #endif
 
     // TODO init INA209 with real values, defaults are for 32V system
-    INA209 ina209(0x80);
     ina209.writeCfgReg(14751); // default
     ina209.writeCal(4096);
     
@@ -90,6 +142,8 @@ void setup()
 #endif
 
     // initialization completed, notify satellite
+	ADCSdata data_packet;
+	clearADCSdata(&data_packet);
     data_packet.status = STATUS_HELLO;
     // TODO: compute CRC
     SERCOM_UART.write(data_packet.data, PACKET_LEN);
@@ -127,6 +181,9 @@ void setup()
  */
 static void readUART(void *pvParameters)
 {
+	TEScommand cmd_packet;
+	uint8_t mode;
+
     uint8_t bytes_received = 0;  // number of consecutive bytes received from
                                  // satellite - used as index for cmd packet
                                  // char array
@@ -149,13 +206,15 @@ static void readUART(void *pvParameters)
 
                 if (cmd_packet.command == COMMAND_TEST)
                 {
-                    mode = MODE_TEST;  // enter test mode
+                    mode = MODE_TEST;
                 }
 
                 if (cmd_packet.command == COMMAND_STANDBY)
                 {
-                    mode = MODE_STANDBY;  // enter standby mode
+                    mode = MODE_STANDBY;
                 }
+
+				xQueueOverwrite(modeQ, (void*)&mode);  // enter specified mode
 
 #ifdef DEBUG
                 // convert int to string for USB monitoring
@@ -181,6 +240,8 @@ static void readUART(void *pvParameters)
                 bytes_received = 0;
             }
         }
+
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -198,55 +259,37 @@ static void readUART(void *pvParameters)
  */
 static void writeUART(void *pvParameters)
 {
-    ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
-                                        // a pointer
-	ICM_20948_I2C *sensor_ptr2 = &IMU2; // IMU data can only be accessed through
-                                        // a pointer
-
-    data_packet.status = STATUS_OK;
-
-    // use static dummy values for voltage, current, and motor speed until we
-    // have a device that can monitor them
-    data_packet.voltage = 6;
-    data_packet.current = 500 / 10;
-    data_packet.speed = floatToFixed(1.0);
+	UBaseType_t mode;
+	ADCSdata data_packet;    
 
     while (1)
     {
+		xQueuePeek(modeQ, (void*)&mode, (TickType_t)0);
+
         if (mode == MODE_TEST)
         {
-            if (IMU1.dataReady())
-            {
-                IMU1.getAGMT();  // acquires data from sensor
-			}
+			data_packet.status = STATUS_OK;
 
-			if (IMU2.dataReady())
-			{
-				IMU2.getAGMT();
-			}
+			// use static dummy values for voltage and current until we figure
+			// out how to use the INA
+			data_packet.voltage = 6;
+			data_packet.current = 500 / 10;
 
-			// extract data from IMU object
-			data_packet.magX = (int8_t)((sensor_ptr1->magX() +
-										 sensor_ptr2->magX()) / 2);
-			data_packet.magY = (int8_t)((sensor_ptr1->magY() +
-										 sensor_ptr2->magY()) / 2);
-			data_packet.magZ = (int8_t)((sensor_ptr1->magZ() +
-										 sensor_ptr2->magZ()) / 2);
+			// use static dummy value for motor speed until frequency
+			// measurements work
+			data_packet.speed = floatToFixed(1.0);
 
-			data_packet.gyroX = floatToFixed(((sensor_ptr1->gyrX() +
-											   sensor_ptr2->gyrX()) / 2));
-			data_packet.gyroY = floatToFixed(((sensor_ptr1->gyrY() +
-											   sensor_ptr2->gyrY()) / 2));
-			data_packet.gyroZ = floatToFixed(((sensor_ptr1->gyrZ() +
-											   sensor_ptr2->gyrZ()) / 2));
+			readIMU(&data_packet);
 
 			// TODO: compute CRC
 
 			SERCOM_UART.write(data_packet.data, PACKET_LEN);  // send to TES
 #ifdef DEBUG
 			SERCOM_USB.write("Wrote to UART\r\n");
-			printScaledAGMT(&IMU1);
+			// printScaledAGMT(&IMU1);
 #endif
+
+			clearADCSdata(&data_packet);
         }
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);

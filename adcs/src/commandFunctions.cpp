@@ -13,18 +13,18 @@ void testFun()
 //This will loop indefinately until there is something in UART
 void standby()
 {
-	char cmd[8];
+	// char cmd[8];
 
-	do
-	{
-		readUART(cmd);
-		if (cmd[0] != 0x01) //If there was a command there
-		{
-			doCmd(cmd);
-			return; //This will break the loop
-		}
-		//Should possibly put a delay in here?
-	} while (1);
+	// do
+	// {
+	// 	readUART(cmd);
+	// 	if (cmd[0] != 0x01) //If there was a command there
+	// 	{
+	// 		doCmd(cmd);
+	// 		return; //This will break the loop
+	// 	}
+	// 	//Should possibly put a delay in here?
+	// } while (1);
 }
 
 //Starts rotation and checks that rotation actually occured

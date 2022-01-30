@@ -1,7 +1,15 @@
-#pragma once  // include guard
+#ifndef __COMM_H__
+#define __COMM_H__
 
 #include <stdint.h>
 
+// create more descriptive names for serial interfaces
+#define SERCOM_USB Serial
+#define SERCOM_UART Serial1
+#define SERCOM_I2C Wire
+#define AD0_VAL 1
+
+// packet sizes
 #define COMMAND_LEN  2
 #define PACKET_LEN   11
 
@@ -75,3 +83,5 @@ void clearADCSdata(ADCSdata *adcs);
 // fixed/float conversions
 fixed5_3_t floatToFixed(float f);
 float fixedToFloat(fixed5_3_t fix);
+
+#endif
