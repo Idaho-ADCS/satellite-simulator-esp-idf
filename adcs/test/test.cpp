@@ -126,19 +126,30 @@ void testIMU(void){
  */
 void testDRV(void){
     Serial.println("\tDRV10970 TEST");
+    int RPM;
 
     Serial.println("PWM ~ 10%");
     DRV->run(FWD, 0.1*255); // start at 10%
     const int duration = 10000; // 10s
     volatile long int t0 = millis();
+    RPM = DRV->readRPM();
+    Serial.println("RPM: ");
+    Serial.println(RPM);
     while(millis() - t0 < duration){/*do nothing*/}
 
     Serial.println("PWM ~ 20%");
     t0 = millis();
     DRV->run(FWD, 0.2*255);
+    RPM = DRV->readRPM();
+    Serial.println("RPM: ");
+    Serial.println(RPM);
     while(millis() - t0 < duration){/*do nothing*/}
 
-    // TODO: read the spindle rpm
+    //No rotation RPM test?
+    RPM = DRV->readRPM();
+    Serial.println("RPM: ");
+    Serial.println(RPM);
+
 
     Serial.println("\tstopping DRV10970");
     DRV->stop();
