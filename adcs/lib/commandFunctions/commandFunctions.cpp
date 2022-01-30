@@ -7,31 +7,23 @@
 //This tests the sensors and makes sure they are reading correctly
 void testFun()
 {
+	//Call test/test.cpp?
 	return;
 }
 
 //This will loop indefinately until there is something in UART
 void standby()
 {
-	char cmd[8];
-
-	do
-	{
-		readUART(cmd);
-		if (cmd[0] != 0x01) //If there was a command there
-		{
-			doCmd(cmd);
-			return; //This will break the loop
-		}
-		//Should possibly put a delay in here?
-	} while (1);
+	//Delay then return?
+	//In standby, auto try and detumble? Since this is the first mode...
+	return;
 }
 
 //Starts rotation and checks that rotation actually occured
 //This function will be changed later to support direction
 void orient(const char *direction)
 {
-		ICM_20948_I2C *sensor_ptr = &IMU;
+	ICM_20948_I2C *sensor_ptr = &IMU1;
 //First ping values
 	int8_t     magX;
 	int8_t	   magY;
@@ -51,9 +43,9 @@ void orient(const char *direction)
 	//For now, check that satelite is currently stablized. If not, stablize then rotate.
 	//Copied from main.cpp/writeUART(): Get current rotation/speed of rotation
 	//To test if there is rotation, it will test the difference between 2 data points taken ~1 sec apart.
-	if (IMU.dataReady())
+	if (IMU1.dataReady())
 	{
-		IMU.getAGMT();  // acquires data from sensor
+		IMU1.getAGMT();  // acquires data from sensor
 
 //Get data for first set of values
 		// extract data from IMU object
@@ -71,7 +63,7 @@ void orient(const char *direction)
 		while(millis() - t0 < duration){/*do nothing*/}
 
 //After wait, grab the second set of values and calculate difference
-		IMU.getAGMT();  // acquires data from sensor
+		IMU1.getAGMT();  // acquires data from sensor
 
 		// extract data from IMU object
 		DIFFmagX = magX-((int8_t)sensor_ptr->magX());

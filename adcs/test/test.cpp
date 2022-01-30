@@ -71,8 +71,8 @@ void initIMU_test(void){
     long int t0 = millis();
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
-    IMU.begin(SERCOM_I2C, AD0_VAL);
-    while (IMU.status != ICM_20948_Stat_Ok);  // wait for initialization to
+    IMU1.begin(SERCOM_I2C, 0);
+    while (IMU1.status != ICM_20948_Stat_Ok);  // wait for initialization to
     long int cT = millis();
     Serial.print("INIT IMU [SUCCESS] in ");
     Serial.print(cT - t0);
@@ -117,7 +117,7 @@ void initINA_test(void){
  */
 void testIMU(void){
     Serial.println("\tIMU TEST");
-    printScaledAGMT(&IMU);
+    //printScaledAGMT(&ICM_20948_INT_STATUS_1_t); //This gives an error lol
     Serial.println("");
 }
 
