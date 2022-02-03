@@ -1,12 +1,11 @@
 #include "sensors.h"
-#include "ICM_20948.h"
 
 extern ICM_20948_I2C IMU1;
 #ifdef TWO_IMUS
 extern ICM_20948_I2C IMU2;
 #endif
 
-void readIMU(ADCSdata *data_packet)
+void readIMU(ADCSdata &data_packet)
 {
 	ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
                                         // a pointer
@@ -15,39 +14,39 @@ void readIMU(ADCSdata *data_packet)
                                         // a pointer
 #endif
 
+	float mx, my, mz, gx, gy, gz;
+
 	if (IMU1.dataReady())
-	{
 		IMU1.getAGMT();  // acquires data from sensor
-	}
 
 #ifdef TWO_IMUS
 	if (IMU2.dataReady())
-	{
 		IMU2.getAGMT();
-	}
 #endif
 
 #ifdef TWO_IMUS
 	// extract data from IMU object
-	data_packet->magX = (int8_t)((sensor_ptr1->magY() + sensor_ptr2->magY()) / 2);
-	data_packet->magY = (int8_t)((sensor_ptr1->magX() + sensor_ptr2->magX()) / 2);
-	data_packet->magZ = (int8_t)((sensor_ptr1->magZ() + sensor_ptr2->magZ()) / -2);
+	mx = (sensor_ptr1->magY() + sensor_ptr2->magY()) / 2;
+	my = (sensor_ptr1->magX() + sensor_ptr2->magX()) / 2;
+	mz = (sensor_ptr1->magZ() + sensor_ptr2->magZ()) / -2;
 
-	data_packet->gyroX = floatToFixed(((sensor_ptr1->gyrY() + sensor_ptr2->gyrY()) / 2));
-	data_packet->gyroY = floatToFixed(((sensor_ptr1->gyrX() + sensor_ptr2->gyrX()) / 2));
-	data_packet->gyroZ = floatToFixed(((sensor_ptr1->gyrZ() + sensor_ptr2->gyrZ()) / -2));
+	gx = (sensor_ptr1->gyrY() + sensor_ptr2->gyrY()) / 2;
+	gy = (sensor_ptr1->gyrX() + sensor_ptr2->gyrX()) / 2;
+	gz = (sensor_ptr1->gyrZ() + sensor_ptr2->gyrZ()) / -2;
 #else
-	data_packet->magX = (int8_t)(sensor_ptr1->magY());
-	data_packet->magY = (int8_t)(sensor_ptr1->magX());
-	data_packet->magZ = (int8_t)((sensor_ptr1->magZ()) * -1);
+	mx = sensor_ptr1->magY();
+	my = sensor_ptr1->magX();
+	mz = sensor_ptr1->magZ() * -1;
 
-	data_packet->gyroX = floatToFixed(sensor_ptr1->gyrY());
-	data_packet->gyroY = floatToFixed(sensor_ptr1->gyrX());
-	data_packet->gyroZ = floatToFixed((sensor_ptr1->gyrZ()) * -1);
+	gx = sensor_ptr1->gyrY();
+	gy = sensor_ptr1->gyrX();
+	gz = sensor_ptr1->gyrZ() * -1;
 #endif
+
+	data_packet.setIMUdata(mx, my, mz, gx, gy, gz);
 }
 
-void readINA(ADCSdata *data_packet)
+void readINA(ADCSdata &data_packet)
 {
 
 }

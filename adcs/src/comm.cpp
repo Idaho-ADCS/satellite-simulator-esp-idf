@@ -1,5 +1,71 @@
 #include "comm.h"
 
+ADCSdata::ADCSdata()
+{
+	clear();
+}
+
+void ADCSdata::setStatus(uint8_t s)
+{
+	status = s;
+}
+
+void ADCSdata::setINAdata(float v, float i)
+{
+	voltage = floatToFixed(v);
+	current = (int8_t)(i / 10);
+}
+
+void ADCSdata::setIMUdata(float mx, float my, float mz, float gx, float gy, float gz)
+{
+	magX = (int8_t)mx;
+	magY = (int8_t)my;
+	magZ = (int8_t)mz;
+
+	gyroX = floatToFixed(gx);
+	gyroY = floatToFixed(gy);
+	gyroZ = floatToFixed(gz);
+}
+
+char *ADCSdata::getData()
+{
+	return (char*)data;
+}
+
+void ADCSdata::computeCRC()
+{
+	CRC16 crcGen;
+	char crc_str[8];
+
+	// for (int i = 0; i < PACKET_LEN-2; i++)
+	// 	crcGen.add(data[i]);
+
+	crcGen.add(data, PACKET_LEN-2);
+
+	crc = crcGen.getCRC();
+
+	sprintf(crc_str, "0x%02x", crcGen.getCRC());
+	SERCOM_USB.write("CRC: ");
+	SERCOM_USB.write(crc_str);
+	SERCOM_USB.write("\r\n");
+}
+
+uint16_t ADCSdata::validateCRC()
+{
+	CRC16 crcGen;
+
+	for (int i = 0; i < PACKET_LEN; i++)
+		crcGen.add(data[i]);
+
+	return crcGen.getCRC();
+}
+
+void ADCSdata::clear()
+{
+	for (int i = 0; i < PACKET_LEN; i++)
+		data[i] = 0;
+}
+
 /**
  * @brief
  * Zeroes out a packet that will receive a command from the satellite. Used to
@@ -23,14 +89,14 @@ void clearTEScommand(TEScommand *tes)
  * 
  * @param[out] adcs  Data packet - passed by reference
  */
-void clearADCSdata(ADCSdata *adcs)
-{
-    int i;
-    for (i = 0; i < PACKET_LEN; i++)
-    {
-        adcs->data[i] = 0;
-    }
-}
+// void clearADCSdata(ADCSdata *adcs)
+// {
+//     int i;
+//     for (i = 0; i < PACKET_LEN; i++)
+//     {
+//         adcs->data[i] = 0;
+//     }
+// }
 
 /**
  * @brief

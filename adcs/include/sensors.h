@@ -4,8 +4,8 @@
 #include "comm.h"
 #include "ICM_20948.h"
 
-void readIMU(ADCSdata *data_packet);
-void readINA(ADCSdata *data_packet);
+void readIMU(ADCSdata &data_packet);
+void readINA(ADCSdata &data_packet);
 
 // "helper" functions from IMU demo code that print sensor data to serial
 // monitor over USB

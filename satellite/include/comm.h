@@ -2,8 +2,9 @@
 
 #include <stdint.h>
 
-#define COMMAND_LEN  2
-#define PACKET_LEN   11
+// packet lengths in bytes
+#define COMMAND_LEN  3
+#define PACKET_LEN   12
 
 // command values (all unsigned ints)
 #define COMMAND_STANDBY  0xc0u
@@ -37,8 +38,8 @@ typedef union
 
     struct
     {
-        uint8_t command;
-        uint8_t crc;
+        uint8_t  command;
+        uint16_t crc;
     };
 } TEScommand;
 
@@ -64,7 +65,7 @@ typedef union
         fixed5_3_t gyroX;
         fixed5_3_t gyroY;
         fixed5_3_t gyroZ;
-        uint8_t    crc;
+        uint16_t   crc;
     };
 } ADCSdata;
 

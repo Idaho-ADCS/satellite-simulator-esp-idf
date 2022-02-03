@@ -1,6 +1,7 @@
 #ifndef __COMM_H__
 #define __COMM_H__
 
+#include "CRC16.h"
 #include <stdint.h>
 
 // create more descriptive names for serial interfaces
@@ -9,9 +10,9 @@
 #define SERCOM_I2C Wire
 #define AD0_VAL 1
 
-// packet sizes
-#define COMMAND_LEN  2
-#define PACKET_LEN   11
+// packet sizes in bytes
+#define COMMAND_LEN  3
+#define PACKET_LEN   12
 
 // command values (all unsigned ints)
 #define COMMAND_STANDBY  0xc0u
@@ -46,7 +47,7 @@ typedef union
     struct
     {
         uint8_t command;
-        uint8_t crc;
+        uint16_t crc;
     };
 } TEScommand;
 
@@ -56,29 +57,65 @@ typedef union
  * unioned with a char array so the data can be written to the UART, as the UART
  * module will only write char arrays.
  */
-typedef union
-{
-    char data[PACKET_LEN];
+// typedef union
+// {
+//     char data[PACKET_LEN];
 
-    struct
-    {
-        uint8_t    status;
-        fixed5_3_t voltage;
-        int8_t     current;
-        uint8_t    speed;
-        int8_t     magX;
-        int8_t	   magY;
-        int8_t	   magZ;
-        fixed5_3_t gyroX;
-        fixed5_3_t gyroY;
-        fixed5_3_t gyroZ;
-        uint8_t    crc;
-    };
-} ADCSdata;
+//     struct
+//     {
+//         uint8_t    status;
+//         fixed5_3_t voltage;
+//         int8_t     current;
+//         uint8_t    speed;
+//         int8_t     magX;
+//         int8_t	   magY;
+//         int8_t	   magZ;
+//         fixed5_3_t gyroX;
+//         fixed5_3_t gyroY;
+//         fixed5_3_t gyroZ;
+//         uint16_t   crc;
+//     };
+// } ADCSdata;
+
+class ADCSdata
+{
+private:
+	union
+	{
+		uint8_t data[PACKET_LEN];
+		// char data_str[PACKET_LEN];
+
+		struct
+		{
+			uint8_t    status;
+			fixed5_3_t voltage;
+			int8_t     current;
+			uint8_t    speed;
+			int8_t     magX;
+			int8_t	   magY;
+			int8_t	   magZ;
+			fixed5_3_t gyroX;
+			fixed5_3_t gyroY;
+			fixed5_3_t gyroZ;
+			uint16_t   crc;
+		};
+	};
+
+public:
+	ADCSdata();
+	void setStatus(uint8_t s);
+	void setINAdata(float v, float i);
+	void setSpeed(float s);
+	void setIMUdata(float mx, float my, float mz, float gx, float gy, float gz);
+	char *getData();
+	void computeCRC();
+	uint16_t validateCRC();
+	void clear();
+};
 
 // zero out command/data packets
 void clearTEScommand(TEScommand *tes);
-void clearADCSdata(ADCSdata *adcs);
+// void clearADCSdata(ADCSdata *adcs);
 
 // fixed/float conversions
 fixed5_3_t floatToFixed(float f);
