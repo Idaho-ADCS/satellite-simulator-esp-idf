@@ -27,7 +27,7 @@ ICM_20948_I2C IMU1;
 ICM_20948_I2C IMU2;
 #endif
 
-/* RTOS TASK GLOBAL VARIABLES =============================================== */
+/* RTOS GLOBAL VARIABLES ==================================================== */
 
 /**
  * @brief
@@ -135,10 +135,10 @@ void setup()
 
     // initialization completed, notify satellite
 	ADCSdata data_packet;
-    data_packet.setStatus((uint8_t)STATUS_HELLO);
+	Status s = HELLO;
+    data_packet.setStatus(s);
     data_packet.computeCRC();
-
-    SERCOM_UART.write(data_packet.getData(), PACKET_LEN);
+    data_packet.send();
 
     // instantiate tasks and start scheduler
     xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
@@ -193,15 +193,15 @@ static void readUART(void *pvParameters)
             {
 				if (cmd_packet.checkCRC())
 				{
-					if (cmd_packet.getCommand() == COMMAND_TEST)
+					if (cmd_packet.getCommand() == TEST)
 						mode = MODE_TEST;
 
-					if (cmd_packet.getCommand() == COMMAND_STANDBY)
+					if (cmd_packet.getCommand() == STANDBY)
 						mode = MODE_STANDBY;
 				}
 				else
                 {
-					response.setStatus((uint8_t)STATUS_ERROR);
+					response.setStatus(COMM_ERROR);
 					response.computeCRC();
 					response.send();
 				}
@@ -217,10 +217,10 @@ static void readUART(void *pvParameters)
                 SERCOM_USB.print(cmd_str);
                 SERCOM_USB.print("\r\n");
 
-                if (cmd_packet.getCommand() == COMMAND_TEST)
+                if (cmd_packet.getCommand() == TEST)
                     SERCOM_USB.print("Entering test mode\r\n");
 
-                if (cmd_packet.getCommand() == COMMAND_STANDBY)
+                if (cmd_packet.getCommand() == STANDBY)
                     SERCOM_USB.print("Entering standby mode\r\n");
 #endif
             }
@@ -257,23 +257,11 @@ static void writeUART(void *pvParameters)
 
         if (mode == MODE_TEST)
         {
-			data_packet.setStatus((uint8_t)STATUS_OK);
-
-			// // use static dummy values for voltage and current until we figure
-			// // out how to use the INA
-			// data_packet.voltage = 6;
-			// data_packet.current = 500 / 10;
-
-			// // use static dummy value for motor speed until frequency
-			// // measurements work
-			// data_packet.speed = floatToFixed(1.0);
-
+			data_packet.setStatus(OK);
 			readIMU(data_packet);
 			readINA(data_packet);
-
 			data_packet.computeCRC();
-
-			SERCOM_UART.write(data_packet.getData(), PACKET_LEN);  // send to TES
+			data_packet.send();  // send to TES
 #ifdef DEBUG
 			SERCOM_USB.write("Wrote to UART\r\n");
 			// printScaledAGMT(&IMU1);

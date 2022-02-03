@@ -16,15 +16,21 @@
 #define COMMAND_LEN  3
 #define PACKET_LEN   12
 
-// command values (all unsigned ints)
-#define COMMAND_STANDBY  0xc0
-#define COMMAND_TEST     0xa0
+// command values
+enum Command : uint8_t
+{
+	STANDBY = 0xc0,
+	TEST    = 0xa0
+};
 
-// data packet status codes (all unsigned ints)
-#define STATUS_OK     		0xaa
-#define STATUS_ERROR  		0xf0
-#define STATUS_HELLO  		0xaf
-#define STATUS_OVERFLOW(x)  (0x00 + x)
+// data packet status codes
+enum Status : uint8_t
+{
+	OK         = 0xaa,
+	HELLO      = 0xaf,
+	ADCS_ERROR = 0xf0,
+	COMM_ERROR = 0x99
+};
 
 /**
  * @brief
