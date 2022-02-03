@@ -63,7 +63,7 @@ void setup()
 	// Create a counting semaphore with a maximum value of 1 and an initial
 	// value of 0. Starts ADCS in standby mode.
 	modeQ = xQueueCreate(1, sizeof(uint8_t));
-	uint8_t mode = MODE_TEST;
+	uint8_t mode = MODE_STANDBY;
 	xQueueSend(modeQ, (void*)&mode, (TickType_t)0);
 
 	// enable LED
@@ -141,7 +141,7 @@ void setup()
     SERCOM_UART.write(data_packet.getData(), PACKET_LEN);
 
     // instantiate tasks and start scheduler
-    // xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
+    xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
     xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
     // TODO: schedule task for INA209 read
 
@@ -174,13 +174,8 @@ void setup()
 static void readUART(void *pvParameters)
 {
 	TEScommand cmd_packet;
+	ADCSdata response;
 	uint8_t mode;
-
-    uint8_t bytes_received = 0;  // number of consecutive bytes received from
-                                 // satellite - used as index for cmd packet
-                                 // char array
-
-	clearTEScommand(&cmd_packet);
 
 #ifdef DEBUG
     char cmd_str[8];  // used to print command value to serial monitor
@@ -192,39 +187,42 @@ static void readUART(void *pvParameters)
         {							  // receive buffer
 
             // copy one byte out of UART receive buffer
-            cmd_packet.data[bytes_received] = SERCOM_UART.read();
-            bytes_received++;
+            cmd_packet.addByte((uint8_t)SERCOM_UART.read());
 
-            if (bytes_received >= COMMAND_LEN)  // full command packet received
+            if (cmd_packet.isFull())  // full command packet received
             {
-                // TODO: verify CRC
+				if (cmd_packet.checkCRC())
+				{
+					if (cmd_packet.getCommand() == COMMAND_TEST)
+						mode = MODE_TEST;
 
-                if (cmd_packet.command == COMMAND_TEST)
-                    mode = MODE_TEST;
-
-                if (cmd_packet.command == COMMAND_STANDBY)
-                    mode = MODE_STANDBY;
+					if (cmd_packet.getCommand() == COMMAND_STANDBY)
+						mode = MODE_STANDBY;
+				}
+				else
+                {
+					response.setStatus((uint8_t)STATUS_ERROR);
+					response.computeCRC();
+					response.send();
+				}
 
 				xQueueOverwrite(modeQ, (void*)&mode);  // enter specified mode
 
 #ifdef DEBUG
                 // convert int to string for USB monitoring
-                sprintf(cmd_str, "0x%02x", cmd_packet.command);
+                sprintf(cmd_str, "0x%02x", cmd_packet.getCommand());
 
                 // print command value to USB
                 SERCOM_USB.print("Command received: ");
                 SERCOM_USB.print(cmd_str);
                 SERCOM_USB.print("\r\n");
 
-                if (cmd_packet.command == COMMAND_TEST)
+                if (cmd_packet.getCommand() == COMMAND_TEST)
                     SERCOM_USB.print("Entering test mode\r\n");
 
-                if (cmd_packet.command == COMMAND_STANDBY)
+                if (cmd_packet.getCommand() == COMMAND_STANDBY)
                     SERCOM_USB.print("Entering standby mode\r\n");
 #endif
-
-                // reset index counter to zero for next command
-                bytes_received = 0;
             }
         }
 

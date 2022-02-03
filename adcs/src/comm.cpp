@@ -37,27 +37,29 @@ void ADCSdata::computeCRC()
 	CRC16 crcGen;
 	char crc_str[8];
 
-	// for (int i = 0; i < PACKET_LEN-2; i++)
-	// 	crcGen.add(data[i]);
-
 	crcGen.add(data, PACKET_LEN-2);
 
 	crc = crcGen.getCRC();
 
+#ifdef COMM_DEBUG
 	sprintf(crc_str, "0x%02x", crcGen.getCRC());
 	SERCOM_USB.write("CRC: ");
 	SERCOM_USB.write(crc_str);
 	SERCOM_USB.write("\r\n");
+#endif
 }
 
-uint16_t ADCSdata::validateCRC()
+bool ADCSdata::checkCRC()
 {
 	CRC16 crcGen;
 
 	for (int i = 0; i < PACKET_LEN; i++)
 		crcGen.add(data[i]);
 
-	return crcGen.getCRC();
+	if (crcGen.getCRC() == 0)
+		return true;
+	else
+		return false;
 }
 
 void ADCSdata::clear()
@@ -66,37 +68,62 @@ void ADCSdata::clear()
 		data[i] = 0;
 }
 
-/**
- * @brief
- * Zeroes out a packet that will receive a command from the satellite. Used to
- * ensure the program doesn't attempt to read uninitialized data.
- * 
- * @param[out] tes  Command packet - passed by reference
- */
-void clearTEScommand(TEScommand *tes)
+void ADCSdata::send()
 {
-    int i;
-    for (i = 0; i < COMMAND_LEN; i++)
-    {
-        tes->data[i] = 0;
-    }
+	SERCOM_UART.write((char*)data, PACKET_LEN);
 }
 
-/**
- * @brief
- * Zeroes out a packet that will be filled with data collected by the ADCS. Used
- * to ensure the program doesn't attempt to read uninitialized data.
- * 
- * @param[out] adcs  Data packet - passed by reference
- */
-// void clearADCSdata(ADCSdata *adcs)
-// {
-//     int i;
-//     for (i = 0; i < PACKET_LEN; i++)
-//     {
-//         adcs->data[i] = 0;
-//     }
-// }
+TEScommand::TEScommand()
+{
+	clear();
+}
+
+void TEScommand::addByte(uint8_t b)
+{
+	data[bytes_received] = b;
+	bytes_received++;
+
+	if (bytes_received == COMMAND_LEN)
+	{
+		full = true;
+		bytes_received = 0;
+	}
+	else
+	{
+		full = false;
+	}
+}
+
+bool TEScommand::isFull()
+{
+	return full;
+}
+
+uint8_t TEScommand::getCommand()
+{
+	return command;
+}
+
+bool TEScommand::checkCRC()
+{
+	CRC16 crcGen;
+
+	for (int i = 0; i < COMMAND_LEN; i++)
+		crcGen.add(data[i]);
+
+	if (crcGen.getCRC() == 0)
+		return true;
+	else
+		return false;
+}
+
+void TEScommand::clear()
+{
+	for (int i = 0; i < COMMAND_LEN; i++)
+		data[i] = 0;
+
+	bytes_received = 0;
+}
 
 /**
  * @brief

@@ -8,8 +8,9 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "C:/Users/p-squared/ADCS/satellite/include",
-                "C:/Users/p-squared/ADCS/satellite/src",
+                "c:/Users/p-squared/ADCS/satellite/include",
+                "c:/Users/p-squared/ADCS/satellite/src",
+                "c:/Users/p-squared/ADCS/satellite/lib/Arduino-FreeRTOS-SAMD21-master/src",
                 "C:/Users/p-squared/.platformio/packages/framework-cmsis/CMSIS/Include",
                 "C:/Users/p-squared/.platformio/packages/framework-cmsis-atmel/CMSIS/Device/ATMEL",
                 "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/cores/arduino",
@@ -22,13 +23,15 @@
                 "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/SPI",
                 "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/USBHost/src",
                 "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/Wire",
+                "C:/Users/p-squared/.platformio/packages/tool-unity",
                 ""
             ],
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "C:/Users/p-squared/ADCS/satellite/include",
-                    "C:/Users/p-squared/ADCS/satellite/src",
+                    "c:/Users/p-squared/ADCS/satellite/include",
+                    "c:/Users/p-squared/ADCS/satellite/src",
+                    "c:/Users/p-squared/ADCS/satellite/lib/Arduino-FreeRTOS-SAMD21-master/src",
                     "C:/Users/p-squared/.platformio/packages/framework-cmsis/CMSIS/Include",
                     "C:/Users/p-squared/.platformio/packages/framework-cmsis-atmel/CMSIS/Device/ATMEL",
                     "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/cores/arduino",
@@ -41,11 +44,12 @@
                     "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/SPI",
                     "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/USBHost/src",
                     "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/libraries/Wire",
+                    "C:/Users/p-squared/.platformio/packages/tool-unity",
                     ""
                 ]
             },
             "defines": [
-                "PLATFORMIO=50203",
+                "PLATFORMIO=50204",
                 "ARDUINO_SAMD_ZERO",
                 "__SAMD21G18A__",
                 "ARDUINO=10805",
