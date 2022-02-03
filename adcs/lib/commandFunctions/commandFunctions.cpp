@@ -78,6 +78,16 @@ void orient(const char *direction)
 		else //If here, there is some rotation occuring
 		{
 			//Rotate to stop rotation and call the function again after a select duration 
+			DRV->run(FWD, 0.2*255); //20% TEMP--------
+
+			//IDEA:
+			//txt file that holds all of the previous data points of rotation (makes it easier to troubleshoot now, can move to array later)
+			//Do the math for rotation
+
+				//If theres a negitive value, rotate forwards
+				//positive value, rotate backwards
+			//rotate
+			//call function again (loopies)
 		}
 	
 	return;
