@@ -10,7 +10,8 @@
             "includePath": [
                 "c:/Users/p-squared/ADCS/satellite/include",
                 "c:/Users/p-squared/ADCS/satellite/src",
-                "c:/Users/p-squared/ADCS/satellite/lib/Arduino-FreeRTOS-SAMD21-master/src",
+                "c:/Users/p-squared/ADCS/satellite/lib/CRC",
+                "c:/Users/p-squared/ADCS/satellite/lib/FreeRTOS-SAMD21/src",
                 "C:/Users/p-squared/.platformio/packages/framework-cmsis/CMSIS/Include",
                 "C:/Users/p-squared/.platformio/packages/framework-cmsis-atmel/CMSIS/Device/ATMEL",
                 "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/cores/arduino",
@@ -31,7 +32,8 @@
                 "path": [
                     "c:/Users/p-squared/ADCS/satellite/include",
                     "c:/Users/p-squared/ADCS/satellite/src",
-                    "c:/Users/p-squared/ADCS/satellite/lib/Arduino-FreeRTOS-SAMD21-master/src",
+                    "c:/Users/p-squared/ADCS/satellite/lib/CRC",
+                    "c:/Users/p-squared/ADCS/satellite/lib/FreeRTOS-SAMD21/src",
                     "C:/Users/p-squared/.platformio/packages/framework-cmsis/CMSIS/Include",
                     "C:/Users/p-squared/.platformio/packages/framework-cmsis-atmel/CMSIS/Device/ATMEL",
                     "C:/Users/p-squared/.platformio/packages/framework-arduino-samd-sparkfun/cores/arduino",

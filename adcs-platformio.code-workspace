@@ -25,7 +25,8 @@
 			"ostream": "cpp",
 			"ratio": "cpp",
 			"sstream": "cpp",
-			"streambuf": "cpp"
+			"streambuf": "cpp",
+			"type_traits": "cpp"
 		}
 	}
 }

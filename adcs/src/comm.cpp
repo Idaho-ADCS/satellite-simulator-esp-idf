@@ -1,77 +1,6 @@
 #include "comm.h"
 
-ADCSdata::ADCSdata()
-{
-	clear();
-}
-
-void ADCSdata::setStatus(uint8_t s)
-{
-	status = s;
-}
-
-void ADCSdata::setINAdata(float v, float i)
-{
-	voltage = floatToFixed(v);
-	current = (int8_t)(i / 10);
-}
-
-void ADCSdata::setIMUdata(float mx, float my, float mz, float gx, float gy, float gz)
-{
-	magX = (int8_t)mx;
-	magY = (int8_t)my;
-	magZ = (int8_t)mz;
-
-	gyroX = floatToFixed(gx);
-	gyroY = floatToFixed(gy);
-	gyroZ = floatToFixed(gz);
-}
-
-char *ADCSdata::getData()
-{
-	return (char*)data;
-}
-
-void ADCSdata::computeCRC()
-{
-	CRC16 crcGen;
-	char crc_str[8];
-
-	crcGen.add(data, PACKET_LEN-2);
-
-	crc = crcGen.getCRC();
-
-#ifdef COMM_DEBUG
-	sprintf(crc_str, "0x%02x", crcGen.getCRC());
-	SERCOM_USB.write("CRC: ");
-	SERCOM_USB.write(crc_str);
-	SERCOM_USB.write("\r\n");
-#endif
-}
-
-bool ADCSdata::checkCRC()
-{
-	CRC16 crcGen;
-
-	for (int i = 0; i < PACKET_LEN; i++)
-		crcGen.add(data[i]);
-
-	if (crcGen.getCRC() == 0)
-		return true;
-	else
-		return false;
-}
-
-void ADCSdata::clear()
-{
-	for (int i = 0; i < PACKET_LEN; i++)
-		data[i] = 0;
-}
-
-void ADCSdata::send()
-{
-	SERCOM_UART.write((char*)data, PACKET_LEN);
-}
+/* TEScommand METHODS ======================================================= */
 
 TEScommand::TEScommand()
 {
@@ -80,38 +9,44 @@ TEScommand::TEScommand()
 
 void TEScommand::addByte(uint8_t b)
 {
-	data[bytes_received] = b;
-	bytes_received++;
+	_data[_bytes_received] = b;
+	_bytes_received++;
 
-	if (bytes_received == COMMAND_LEN)
+	if (_bytes_received >= COMMAND_LEN)
 	{
-		full = true;
-		bytes_received = 0;
+		_full = true;
+		_bytes_received = 0;
 	}
 	else
 	{
-		full = false;
+		_full = false;
 	}
 }
 
 bool TEScommand::isFull()
 {
-	return full;
+	return _full;
 }
 
 uint8_t TEScommand::getCommand()
 {
-	return command;
+	return _command;
 }
 
 bool TEScommand::checkCRC()
 {
 	CRC16 crcGen;
+	crcGen.add(_data, COMMAND_LEN-2);
 
-	for (int i = 0; i < COMMAND_LEN; i++)
-		crcGen.add(data[i]);
+#if 0
+	char crc_str[8];
+	sprintf(crc_str, "0x%02x", crcGen.getCRC());
+	SERCOM_USB.write("TES CRC: ");
+	SERCOM_USB.write(crc_str);
+	SERCOM_USB.write("\r\n");
+#endif
 
-	if (crcGen.getCRC() == 0)
+	if (crcGen.getCRC() == _crc)
 		return true;
 	else
 		return false;
@@ -120,10 +55,67 @@ bool TEScommand::checkCRC()
 void TEScommand::clear()
 {
 	for (int i = 0; i < COMMAND_LEN; i++)
-		data[i] = 0;
+		_data[i] = 0;
 
-	bytes_received = 0;
+	_bytes_received = 0;
 }
+
+/* ADCSdata METHODS ========================================================= */
+
+ADCSdata::ADCSdata()
+{
+	clear();
+}
+
+void ADCSdata::setStatus(uint8_t s)
+{
+	_status = s;
+}
+
+void ADCSdata::setINAdata(float v, float i)
+{
+	_voltage = floatToFixed(v);
+	_current = (int8_t)(i / 10);
+}
+
+void ADCSdata::setIMUdata(float mx, float my, float mz, float gx, float gy, float gz)
+{
+	_magX = (int8_t)mx;
+	_magY = (int8_t)my;
+	_magZ = (int8_t)mz;
+
+	_gyroX = floatToFixed(gx);
+	_gyroY = floatToFixed(gy);
+	_gyroZ = floatToFixed(gz);
+}
+
+void ADCSdata::computeCRC()
+{
+	CRC16 crcGen;
+	crcGen.add(_data, PACKET_LEN-2);
+	_crc = crcGen.getCRC();
+
+#if 0
+	char crc_str[8];
+	sprintf(crc_str, "0x%02x", crcGen.getCRC());
+	SERCOM_USB.write("CRC: ");
+	SERCOM_USB.write(crc_str);
+	SERCOM_USB.write("\r\n");
+#endif
+}
+
+void ADCSdata::clear()
+{
+	for (int i = 0; i < PACKET_LEN; i++)
+		_data[i] = 0;
+}
+
+void ADCSdata::send()
+{
+	SERCOM_UART.write((char*)_data, PACKET_LEN);
+}
+
+/* HELPER FUNCTIONS ========================================================= */
 
 /**
  * @brief

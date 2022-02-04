@@ -1,5 +1,6 @@
 #include "comm.h"
-#include <FreeRTOS_SAMD21.h>
+#include "CRC16.h"
+#include "FreeRTOS_SAMD21.h"
 #include <stdint.h>
 
 // if defined, enables debug print statements over USB to the serial monitor
@@ -54,6 +55,7 @@ void setup()
     // instantiate tasks and start scheduler
     xTaskCreate(readUART, "Read UART", 1024, NULL, 1, NULL);
     xTaskCreate(writeUART, "Write UART", 1024, NULL, 1, NULL);
+
 #ifdef DEBUG
     SERCOM_USB.write("Tasks created\r\n");
 #endif
@@ -81,6 +83,7 @@ static void readUART(void *pvParameters)
     uint8_t bytes_received = 0;  // number of consecutive bytes received from
                                  // satellite - used as index for cmd packet
                                  // char array
+	CRC16 crcGen;
 
 #ifdef DEBUG
     char data_str[256];  // used to print command value to serial monitor
@@ -98,8 +101,15 @@ static void readUART(void *pvParameters)
             if (bytes_received >= PACKET_LEN)  // full command packet received
             {
                 // TODO: verify CRC
+				crcGen.reset();
+				crcGen.add((uint8_t*)(data_packet.data), PACKET_LEN-2);
 
 #ifdef DEBUG
+				if (crcGen.getCRC() == data_packet.crc)
+					SERCOM_USB.print("VALID - ");
+				else
+					SERCOM_USB.print("INVALID - ");
+					
                 // print data value to USB
                 SERCOM_USB.print("V: ");
                 SERCOM_USB.print(data_packet.voltage);
@@ -151,22 +161,30 @@ static void readUART(void *pvParameters)
  */
 static void writeUART(void *pvParameters)
 {
+	CRC16 crcGen;
+
 	while (1)
     {
-        cmd_packet.command = COMMAND_TEST;
-		clearADCSdata(&data_packet);
-		SERCOM_UART.write(cmd_packet.data, COMMAND_LEN);
-#ifdef DEBUG
+        cmd_packet.command = (uint8_t)COMMAND_TEST;
+		crcGen.reset();
+		crcGen.add((uint8_t*)cmd_packet.data, COMMAND_LEN-2);
+		cmd_packet.crc = crcGen.getCRC();
+		
+		// clearADCSdata(&data_packet);
+
+		SERCOM_UART.write((char*)(cmd_packet.data), COMMAND_LEN);
 		SERCOM_USB.write("Command sent: test mode\r\n");
-#endif
         vTaskDelay(10000 / portTICK_PERIOD_MS);
 
-		cmd_packet.command = COMMAND_STANDBY;
-		clearADCSdata(&data_packet);
-		SERCOM_UART.write(cmd_packet.data, COMMAND_LEN);
-#ifdef DEBUG
+		cmd_packet.command = (uint8_t)COMMAND_STANDBY;
+		crcGen.reset();
+		crcGen.add((uint8_t*)cmd_packet.data, COMMAND_LEN-2);
+		cmd_packet.crc = crcGen.getCRC();
+		
+		// clearADCSdata(&data_packet);
+
+		SERCOM_UART.write((char*)(cmd_packet.data), COMMAND_LEN);
 		SERCOM_USB.write("Command sent: standby mode\r\n");
-#endif
         vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }

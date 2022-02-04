@@ -117,7 +117,8 @@ void setup()
 	 * Initialize second IMU
 	 * Address: 0x68 or 0x69
 	 */
-    IMU2.begin(SERCOM_I2C, (~AD0_VAL)&1);
+    IMU2.begin(SERCOM_I2C, (~AD0_VAL)&1);  // initialize other IMU with opposite
+										   // value for bit 0
     while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                                // complete
 	#ifdef DEBUG

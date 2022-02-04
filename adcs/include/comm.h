@@ -4,8 +4,6 @@
 #include "CRC16.h"
 #include <stdint.h>
 
-// #define COMM_DEBUG
-
 // create more descriptive names for serial interfaces
 #define SERCOM_USB  Serial
 #define SERCOM_UART Serial1
@@ -13,7 +11,7 @@
 #define AD0_VAL     1
 
 // packet sizes in bytes
-#define COMMAND_LEN  3
+#define COMMAND_LEN  4
 #define PACKET_LEN   12
 
 // command values
@@ -47,25 +45,26 @@ class TEScommand
 private:
 	union
 	{
-		uint8_t data[COMMAND_LEN];
+		uint8_t _data[COMMAND_LEN];
 
 		struct
 		{
-			uint8_t  command;
-			uint16_t crc;
+			uint16_t _command;
+			uint16_t _crc;
 		};
 	};
 
-	uint8_t bytes_received;
-	bool full;
+	uint8_t _bytes_received;
+	bool    _full;
 
 public:
 	TEScommand();
-	void addByte(uint8_t b);
-	bool isFull();
+
+	void    addByte(uint8_t b);
+	bool    isFull();
 	uint8_t getCommand();
-	bool checkCRC();
-	void clear();
+	bool    checkCRC();
+	void    clear();
 };
 
 class ADCSdata
@@ -73,21 +72,21 @@ class ADCSdata
 private:
 	union
 	{
-		uint8_t data[PACKET_LEN];
+		uint8_t _data[PACKET_LEN];
 
 		struct
 		{
-			uint8_t    status;
-			fixed5_3_t voltage;
-			int8_t     current;
-			uint8_t    speed;
-			int8_t     magX;
-			int8_t	   magY;
-			int8_t	   magZ;
-			fixed5_3_t gyroX;
-			fixed5_3_t gyroY;
-			fixed5_3_t gyroZ;
-			uint16_t   crc;
+			uint8_t    _status;
+			fixed5_3_t _voltage;
+			int8_t     _current;
+			uint8_t    _speed;
+			int8_t     _magX;
+			int8_t	   _magY;
+			int8_t	   _magZ;
+			fixed5_3_t _gyroX;
+			fixed5_3_t _gyroY;
+			fixed5_3_t _gyroZ;
+			uint16_t   _crc;
 		};
 	};
 
@@ -97,9 +96,7 @@ public:
 	void setINAdata(float v, float i);
 	void setSpeed(float s);
 	void setIMUdata(float mx, float my, float mz, float gx, float gy, float gz);
-	char *getData();
 	void computeCRC();
-	bool checkCRC();
 	void clear();
 	void send();
 };
