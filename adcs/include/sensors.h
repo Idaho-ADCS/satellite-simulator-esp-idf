@@ -3,6 +3,7 @@
 
 #include "comm.h"
 #include "ICM_20948.h"
+#include "INA209.h"
 
 void readIMU(ADCSdata &data_packet);
 void readINA(ADCSdata &data_packet);

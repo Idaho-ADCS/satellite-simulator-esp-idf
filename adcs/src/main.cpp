@@ -136,8 +136,7 @@ void setup()
 
     // initialization completed, notify satellite
 	ADCSdata data_packet;
-	Status s = HELLO;
-    data_packet.setStatus(s);
+    data_packet.setStatus(HELLO);
     data_packet.computeCRC();
     data_packet.send();
 
@@ -153,7 +152,13 @@ void setup()
     vTaskStartScheduler();
 
     // should never be reached if everything goes right
-    while (1);
+    while (1)
+	{
+		data_packet.setStatus(ADCS_ERROR);
+		data_packet.computeCRC();
+		data_packet.send();
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+	}
 }
 
 /* RTOS TASK DEFINITIONS ==================================================== */
