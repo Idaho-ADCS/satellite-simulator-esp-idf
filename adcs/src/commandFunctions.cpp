@@ -4,6 +4,12 @@
 #include "commandFunctions.h"
 #include "supportFunctions.h"
 
+extern ICM_20948_I2C IMU1;
+#ifdef TWO_IMUS
+extern ICM_20948_I2C IMU2;
+#endif
+extern DRV10970* DRV;
+
 //This tests the sensors and makes sure they are reading correctly
 void testFun()
 {
@@ -23,7 +29,6 @@ void standby()
 //This function will be changed later to support direction
 void orient(const char *direction)
 {
-#if 0
 	ICM_20948_I2C *sensor_ptr = &IMU1;
 //First ping values
 	int8_t     magX;
@@ -86,8 +91,15 @@ void orient(const char *direction)
 		else //If here, there is some rotation occuring
 		{
 			//Rotate to stop rotation and call the function again after a select duration 
+			if(DIFFgyroZ > 0) //Positive spin
+			{
+				DRV->run(FWD, 0.1*255); // start at 10%
+			}
+			else //Negitive spin
+			{
+				DRV->run(FWD, 0.1*255); // start at 10%
+			}
 		}
-#endif
 	
 	return;
 }
