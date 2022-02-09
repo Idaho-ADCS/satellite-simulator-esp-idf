@@ -2,18 +2,19 @@
 
 #include <stdint.h>
 
-#define COMMAND_LEN  2
-#define PACKET_LEN   11
+// packet lengths in bytes
+#define COMMAND_LEN  4
+#define PACKET_LEN   12
 
 // command values (all unsigned ints)
-#define COMMAND_STANDBY  0xc0u
-#define COMMAND_TEST     0xa0u
+#define COMMAND_STANDBY  0xc0
+#define COMMAND_TEST     0xa0
 
 // data packet status codes (all unsigned ints)
-#define STATUS_OK     		0xaau
-#define STATUS_ERROR  		0xf0u
-#define STATUS_HELLO  		0xafu
-#define STATUS_OVERFLOW(x)  (0x00u + x)
+#define STATUS_OK     		0xaa
+#define STATUS_ERROR  		0xf0
+#define STATUS_HELLO  		0xaf
+#define STATUS_OVERFLOW(x)  (0x00 + x)
 
 /**
  * @brief
@@ -33,12 +34,12 @@ typedef int8_t fixed5_3_t;
  */
 typedef union
 {
-    char data[COMMAND_LEN];
+    uint8_t data[COMMAND_LEN];
 
     struct
     {
-        uint8_t command;
-        uint8_t crc;
+        uint16_t command;
+        uint16_t crc;
     };
 } TEScommand;
 
@@ -64,7 +65,7 @@ typedef union
         fixed5_3_t gyroX;
         fixed5_3_t gyroY;
         fixed5_3_t gyroZ;
-        uint8_t    crc;
+        uint16_t   crc;
     };
 } ADCSdata;
 

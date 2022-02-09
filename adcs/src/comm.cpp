@@ -1,36 +1,121 @@
 #include "comm.h"
 
-/**
- * @brief
- * Zeroes out a packet that will receive a command from the satellite. Used to
- * ensure the program doesn't attempt to read uninitialized data.
- * 
- * @param[out] tes  Command packet - passed by reference
- */
-void clearTEScommand(TEScommand *tes)
+/* TEScommand METHODS ======================================================= */
+
+TEScommand::TEScommand()
 {
-    int i;
-    for (i = 0; i < COMMAND_LEN; i++)
-    {
-        tes->data[i] = 0;
-    }
+	clear();
 }
 
-/**
- * @brief
- * Zeroes out a packet that will be filled with data collected by the ADCS. Used
- * to ensure the program doesn't attempt to read uninitialized data.
- * 
- * @param[out] adcs  Data packet - passed by reference
- */
-void clearADCSdata(ADCSdata *adcs)
+void TEScommand::addByte(uint8_t b)
 {
-    int i;
-    for (i = 0; i < PACKET_LEN; i++)
-    {
-        adcs->data[i] = 0;
-    }
+	_data[_bytes_received] = b;
+	_bytes_received++;
+
+	if (_bytes_received >= COMMAND_LEN)
+	{
+		_full = true;
+		_bytes_received = 0;
+	}
+	else
+	{
+		_full = false;
+	}
 }
+
+bool TEScommand::isFull()
+{
+	return _full;
+}
+
+uint8_t TEScommand::getCommand()
+{
+	return _command;
+}
+
+bool TEScommand::checkCRC()
+{
+	CRC16 crcGen;
+	crcGen.add(_data, COMMAND_LEN-2);
+
+#if 0
+	char crc_str[8];
+	sprintf(crc_str, "0x%02x", crcGen.getCRC());
+	SERCOM_USB.write("TES CRC: ");
+	SERCOM_USB.write(crc_str);
+	SERCOM_USB.write("\r\n");
+#endif
+
+	if (crcGen.getCRC() == _crc)
+		return true;
+	else
+		return false;
+}
+
+void TEScommand::clear()
+{
+	for (int i = 0; i < COMMAND_LEN; i++)
+		_data[i] = 0;
+
+	_bytes_received = 0;
+}
+
+/* ADCSdata METHODS ========================================================= */
+
+ADCSdata::ADCSdata()
+{
+	clear();
+}
+
+void ADCSdata::setStatus(uint8_t s)
+{
+	_status = s;
+}
+
+void ADCSdata::setINAdata(float v, float i)
+{
+	_voltage = floatToFixed(v);
+	_current = (int8_t)(i / 10);
+}
+
+void ADCSdata::setIMUdata(float mx, float my, float mz, float gx, float gy, float gz)
+{
+	_magX = (int8_t)mx;
+	_magY = (int8_t)my;
+	_magZ = (int8_t)mz;
+
+	_gyroX = floatToFixed(gx);
+	_gyroY = floatToFixed(gy);
+	_gyroZ = floatToFixed(gz);
+}
+
+void ADCSdata::computeCRC()
+{
+	CRC16 crcGen;
+	crcGen.add(_data, PACKET_LEN-2);
+	_crc = crcGen.getCRC();
+
+#if 0
+	char crc_str[8];
+	sprintf(crc_str, "0x%02x", crcGen.getCRC());
+	SERCOM_USB.write("CRC: ");
+	SERCOM_USB.write(crc_str);
+	SERCOM_USB.write("\r\n");
+#endif
+}
+
+void ADCSdata::clear()
+{
+	for (int i = 0; i < PACKET_LEN; i++)
+		_data[i] = 0;
+}
+
+void ADCSdata::send()
+{
+	SERCOM_UART.write((char*)_data, PACKET_LEN);
+}
+
+/* HELPER FUNCTIONS ========================================================= */
 
 /**
  * @brief

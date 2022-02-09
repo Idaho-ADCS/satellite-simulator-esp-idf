@@ -67,6 +67,11 @@ int DRV10970::readRPM(){
     // probably something like
     // toggles gap
 
+    //We are assuming here that 1 "toggle" is equal to 1 full rotation of the spindle. If we record for 1s, you can multiply the 
+    //value we get by 60; which would give us the revolutions per min (RPM). *IN THEORY*
+    toggles = toggles*60; 
+
+
     return toggles;
 }
 
