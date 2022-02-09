@@ -45,6 +45,9 @@ void orient(const char *direction)
 	fixed5_3_t DIFFgyroY;
 	fixed5_3_t DIFFgyroZ;
 
+	const int duration = 10000; // 10s
+    volatile long int t0 = millis();
+
 
 	//For now, check that satelite is currently stablized. If not, stablize then rotate.
 	//Copied from main.cpp/writeUART(): Get current rotation/speed of rotation
@@ -94,12 +97,18 @@ void orient(const char *direction)
 			if(DIFFgyroZ > 0) //Positive spin
 			{
 				DRV->run(FWD, 0.1*255); // start at 10%
+				while(millis() - t0 < duration){/*do nothing*/}
+				DRV->stop();
 			}
 			else //Negitive spin
 			{
 				DRV->run(FWD, 0.1*255); // start at 10%
+				while(millis() - t0 < duration){/*do nothing*/}
+				DRV->stop();
 			}
+			orient(direction); //Call again
 		}
 	
-	return;
+	}
+	return;//Probably print error here.. (If here, IMU's were not ready)
 }
