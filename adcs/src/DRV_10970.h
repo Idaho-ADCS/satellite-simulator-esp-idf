@@ -13,13 +13,13 @@
 #include <Arduino.h>
 
 // default pinout for the SAMD51
-const int   DRV_FG = 0,
-            DRV_FR = 0,
-            DRV_BRKMOD = 0,
-            DRV_PWM = 0,
-            DRV_RD = 0;
+const int   DRV_FG = 6,     // frequency/rpm indication pin
+            DRV_FR = 9,     // motor direction pin
+            DRV_BRKMOD = 0, // brake mode (coast/brake), not currently available
+            DRV_PWM = 10,    // pwm output pin
+            DRV_RD = 5;     // lock indication pin
 
-enum MotorDirection {FWD, REV};
+enum MotorDirection {REV=0, FWD=1};
 
 class DRV10970 {
     private:

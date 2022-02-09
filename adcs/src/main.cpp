@@ -1,9 +1,9 @@
 #include "comm.h"
 #include "supportFunctions.h"
 #include "commandFunctions.h"
-#include "ICM_20948.h"
-#include "DRV_10970.h"
-#include "INA209.h"
+//#include "ICM_20948.h"
+//#include "DRV_10970.h"
+//#include "INA209.h"
 #include <FreeRTOS_SAMD51.h>
 #include <stdint.h>
 
@@ -84,7 +84,7 @@ void setup()
     INA209 ina209(0x80);
     ina209.writeCfgReg(14751); // default
     ina209.writeCal(4096);
-    
+
 #ifdef DEBUG
     SERCOM_USB.write("INA209 initialized\r\n");
 #endif
@@ -115,14 +115,14 @@ void setup()
  * @brief
  * Polls the UART module for data. Processes data one byte at a time if the
  * module reports that data is ready to be received.
- * 
+ *
  * @param[in] pvParameters  Unused but required by FreeRTOS. Program will not
  * compile without this parameter. When a task is instantiated from this
  * function, a set of initialization arguments or NULL is passed in as
  * pvParameters, so pvParameters must be declared even if it is not used.
- * 
+ *
  * @return None
- * 
+ *
  * TODO: Remove polling and invoke this task using an interrupt instead.
  */
 static void readUART(void *pvParameters)
@@ -188,12 +188,12 @@ static void readUART(void *pvParameters)
  * @brief
  * Reads magnetometer and gyroscope values from IMU and writes them to UART
  * every 0.5 seconds while ADCS is in test mode.
- * 
+ *
  * @param[in] pvParameters  Unused but required by FreeRTOS. Program will not
  * compile without this parameter. When a task is instantiated from this
  * function, a set of initialization arguments or NULL is passed in as
  * pvParameters, so pvParameters must be declared even if it is not used.
- * 
+ *
  * @return None
  */
 static void writeUART(void *pvParameters)
@@ -258,7 +258,7 @@ static void writeUART(void *pvParameters)
  * Does nothing. Since we are using FreeRTOS, we will not use Arduino's loop
  * function. However, the project will fail to compile if loop is not defined.
  * Therefore, we define loop to do nothing.
- * 
+ *
  * TODO: Eliminate this function entirely? Even though it does nothing, it will
  * still likely be called and consume clock cycles.
  */
