@@ -32,7 +32,12 @@ void setup(){
     Serial.begin(115200);
     while(!Serial){;}
 
-    init(); // init all ADCS systems
+    Serial.println("Ready to Test(1/0)?:");
+    while(Serial.available() == 0){}
+
+    int ans = Serial.parseInt();
+
+    init_test(); // init all ADCS systems
 
 }
 
@@ -42,9 +47,9 @@ void setup(){
 void loop(){
     Serial.println("------ START TESTING SUBSYSTEMS ------");
     // Test IMU, values back should be close to zero if not moving
-    testIMU();
+    //testIMU();
     testDRV();
-    testINA();
+    //testINA();
     Serial.println("------ END TESTING SUBSYSTEMS ------\n");
 }
 
@@ -53,9 +58,9 @@ void loop(){
  */
 void init_test(void){
     Serial.println("------ STARTING SYSTEM INIT ------");
-    initIMU_test();
+    //initIMU_test();
     initDRV_test();
-    initINA_test();
+    //initINA_test();
     Serial.println("------ FINISHING SYSTEM INIT ------");
 }
 
@@ -83,12 +88,13 @@ void initIMU_test(void){
  * Init the motor driver for the flywheel
  */
 void initDRV_test(void){
-    if(DRV_FG == 0 || DRV_FR == 0 || DRV_BRKMOD == 0 || DRV_PWM == 0 || DRV_RD == 0){
+    if(DRV_FG == 0 || DRV_FR == 0 || DRV_PWM == 0 || DRV_RD == 0){
         Serial.println("INIT DRV10970 [FAILED]\n\t invalid pinout");
 
     }else {
         long int t0 = millis();
         DRV = new DRV10970(DRV_FG, DRV_FR, DRV_BRKMOD, DRV_PWM, DRV_RD);
+        DRV->stop();
         long int cT = millis();
         Serial.print("INIT DRV10970 [SUCCESS] in ");
         Serial.print(cT - t0);
@@ -117,7 +123,7 @@ void initINA_test(void){
  */
 void testIMU(void){
     Serial.println("\tIMU TEST");
-    //printScaledAGMT(&ICM_20948_INT_STATUS_1_t); //This gives an error lol
+    printScaledAGMT(&IMU1);
     Serial.println("");
 }
 
@@ -126,30 +132,56 @@ void testIMU(void){
  */
 void testDRV(void){
     Serial.println("\tDRV10970 TEST");
-    int RPM;
 
-    Serial.println("PWM ~ 10%");
-    DRV->run(FWD, 0.1*255); // start at 10%
-    const int duration = 10000; // 10s
+    // do spindle check
+    // should be in LOCKED condition since we are not spinning the spindle
+    pinMode(13, OUTPUT);
+    digitalWrite(13, HIGH);
+    /*
+    //const int duration = 1000; // 1s
+    //volatile long int t0 = millis();
+
+    //DRV->run(FWD, 128);
+
+    while(true){
+        if(millis() - t0 > duration){ // only print once every second
+            if(DRV->spindleFree()){
+                Serial.println("\t\tspindle is NOT locked (spinning)");
+            }else{
+                Serial.println("\t\tspindle IS locked (not spinning)");
+            }
+            t0 = millis();
+        }
+    }*/
+
+
+    const int duration = 500; // 0.5s
     volatile long int t0 = millis();
-    RPM = DRV->readRPM();
-    Serial.println("RPM: ");
-    Serial.println(RPM);
-    while(millis() - t0 < duration){/*do nothing*/}
+    long int currentTime;
+    double percentage = 0.1;
+    while(true){
+        currentTime = millis();
+        //int spindleSPD = DRV->readRPM();
+        //printf("\tspindle rpm ~%d\n", spindleSPD);
+        if(currentTime - t0 < duration && percentage < 1.0){
+            printf("DC = %d\%\n", percentage * 100);
+            DRV->run(REV, percentage*255);
+            percentage += 0.1;
+            t0 = currentTime;
+        }else if(percentage >= 1.0){
+            break;
+        }
+    }
 
-    Serial.println("PWM ~ 20%");
+    /*
+    Serial.println("\t\tPWM ~ 20%");
     t0 = millis();
-    DRV->run(FWD, 0.2*255);
-    RPM = DRV->readRPM();
-    Serial.println("RPM: ");
-    Serial.println(RPM);
-    while(millis() - t0 < duration){/*do nothing*/}
+    DRV->run(FWD, 0.4*255);
+    while(millis() - t0 < duration){}
+    */
 
-    //No rotation RPM test?
-    RPM = DRV->readRPM();
-    Serial.println("RPM: ");
-    Serial.println(RPM);
-
+    // TODO: read the spindle rpm
+    //DRV->readRPM()
 
     Serial.println("\tstopping DRV10970");
     DRV->stop();

@@ -18,7 +18,7 @@ DRV10970::DRV10970(int fg, int fr, int brkmod, int pwm, int rd){
     // set pin modes
     pinMode(FG, INPUT);
     pinMode(FR, OUTPUT);
-    pinMode(BRKMOD, OUTPUT);
+    //pinMode(BRKMOD, OUTPUT); // this pin not currently exposed
     pinMode(PWM, OUTPUT);
     pinMode(RD, INPUT);
 }
@@ -79,5 +79,5 @@ int DRV10970::readRPM(){
  * Read the RD pin to determine if the spindle is currently locked (HIGH).
  */
 bool DRV10970::spindleFree(){
-    return digitalRead(RD) != HIGH;
+    return digitalRead(RD) == HIGH;
 }
