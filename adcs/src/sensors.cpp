@@ -5,6 +5,8 @@ extern ICM_20948_I2C IMU1;
 extern ICM_20948_I2C IMU2;
 #endif
 
+extern INA209 ina209;
+
 void readIMU(ADCSdata &data_packet)
 {
 	ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
@@ -48,7 +50,29 @@ void readIMU(ADCSdata &data_packet)
 
 void readINA(ADCSdata &data_packet)
 {
+	float voltage;
+	float current;
 
+	int v_raw;
+	int i_raw;
+
+	v_raw = ina209.busVol();
+	i_raw = ina209.current();
+
+	voltage = v_raw / 1000;
+	current = i_raw / 10;
+
+	data_packet.setINAdata(voltage, current);
+
+	char debug_str[32];
+	sprintf(debug_str, "%d", v_raw);
+	SERCOM_USB.write("Bus voltage: ");
+	SERCOM_USB.write(debug_str);
+	SERCOM_USB.write(" mV\r\n");
+	sprintf(debug_str, "%d", i_raw*100);
+	SERCOM_USB.write("Shunt current: ");
+	SERCOM_USB.write(debug_str);
+	SERCOM_USB.write(" uA\r\n");
 }
 
 void printPaddedInt16b(int16_t val)

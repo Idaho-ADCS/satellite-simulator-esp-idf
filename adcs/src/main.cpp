@@ -27,6 +27,9 @@ ICM_20948_I2C IMU1;
 ICM_20948_I2C IMU2;
 #endif
 
+// INA209 object
+INA209 ina209(0x40);
+
 /* RTOS GLOBAL VARIABLES ==================================================== */
 
 /**
@@ -53,22 +56,24 @@ static void writeUART(void *pvParameters);
  */
 void setup()
 {
-	// INA209 object
-	// INA209* ina209;
-	INA209 ina209(0x80);
-
 	// DRV10970 object, connected to the motor driver of the flywheel
 	DRV10970* DRV;
 
 	// Create a counting semaphore with a maximum value of 1 and an initial
 	// value of 0. Starts ADCS in standby mode.
 	modeQ = xQueueCreate(1, sizeof(uint8_t));
-	uint8_t mode = MODE_STANDBY;
+	uint8_t mode = MODE_TEST;
 	xQueueSend(modeQ, (void*)&mode, (TickType_t)0);
 
 	// enable LED
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, HIGH);
+
+	pinMode(9, OUTPUT);
+	digitalWrite(9, HIGH);
+
+	pinMode(10, OUTPUT);
+	analogWrite(10, 127);
 
 #ifdef DEBUG
     /**
@@ -126,9 +131,23 @@ void setup()
 	#endif
 #endif
 
-    // TODO init INA209 with real values, defaults are for 32V system
-    ina209.writeCfgReg(14751); // default
-    ina209.writeCal(4096);
+	/**
+	 * Write default settings to INA209
+	 * Reset: no
+	 * Bus voltage range: 32V
+	 * PGA gain: /8
+	 * PGA range: +-320mV
+	 * ADC resolution: 12 bits
+	 * ADC conversion time: 532us
+	 * Mode: shunt and bus, continuous
+	 */
+    ina209.writeCfgReg(0x399f);
+
+	/**
+	 * Calibrate INA209
+	 * Current LSB: 100uA
+	 */
+    ina209.writeCal(0x7fff);
     
 #ifdef DEBUG
     SERCOM_USB.write("INA209 initialized\r\n");
@@ -141,7 +160,7 @@ void setup()
     data_packet.send();
 
     // instantiate tasks and start scheduler
-    xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
+    // xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
     xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
     // TODO: schedule task for INA209 read
 
@@ -269,7 +288,7 @@ static void writeUART(void *pvParameters)
 			data_packet.computeCRC();
 			data_packet.send();  // send to TES
 #ifdef DEBUG
-			SERCOM_USB.write("Wrote to UART\r\n");
+			// SERCOM_USB.write("Wrote to UART\r\n");
 			// printScaledAGMT(&IMU1);
 #endif
 
