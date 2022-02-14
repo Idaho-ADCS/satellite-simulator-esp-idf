@@ -8,26 +8,28 @@
 #define SERCOM_USB  Serial
 #define SERCOM_UART Serial1
 #define SERCOM_I2C  Wire
-#define AD0_VAL     1
+
+// Value of IMU1 address bit 0
+#define AD0_VAL 1
 
 // packet sizes in bytes
-#define COMMAND_LEN  4
-#define PACKET_LEN   12
+#define COMMAND_LEN 4
+#define PACKET_LEN  12
 
 // command values
 enum Command : uint8_t
 {
-	STANDBY = 0xc0,
-	TEST    = 0xa0
+	CMD_STANDBY = 0xc0,
+	CMD_TEST    = 0xa0
 };
 
 // data packet status codes
 enum Status : uint8_t
 {
-	OK         = 0xaa,
-	HELLO      = 0xaf,
-	ADCS_ERROR = 0xf0,
-	COMM_ERROR = 0x99
+	STATUS_OK         = 0xaa,  // "Heartbeat"
+	STATUS_HELLO      = 0xaf,  // Sent upon system init
+	STATUS_ADCS_ERROR = 0xf0,  // Sent upon runtime error
+	STATUS_COMM_ERROR = 0x99   // Sent upon invalid communication
 };
 
 /**
@@ -40,26 +42,41 @@ enum Status : uint8_t
  */
 typedef int8_t fixed5_3_t;
 
+/**
+ * @brief
+ */
 class TEScommand
 {
 private:
+	// Stores data from TES as a union of an array and integers
 	union
 	{
+		// Data can be accessed as a single array - used when receiving bytes
 		uint8_t _data[COMMAND_LEN];
 
 		struct
 		{
+			// Data can be accessed as fields - used to extract command
 			uint16_t _command;
 			uint16_t _crc;
 		};
 	};
 
+	// Counts the number of bytes received to see if the packet is full
 	uint8_t _bytes_received;
-	bool    _full;
+
+	// Flag that indicates when the packet is full
+	bool _full;
 
 public:
+	/**
+	 * 
+	 */
 	TEScommand();
 
+	/**
+	 * 
+	 */
 	void    addByte(uint8_t b);
 	bool    isFull();
 	uint8_t getCommand();
@@ -72,10 +89,12 @@ class ADCSdata
 private:
 	union
 	{
+		// Data can be accessed as a single array - used to send via UART
 		uint8_t _data[PACKET_LEN];
 
 		struct
 		{
+			// Data can be accessed as fields - used to build packet
 			uint8_t    _status;
 			fixed5_3_t _voltage;
 			int8_t     _current;
