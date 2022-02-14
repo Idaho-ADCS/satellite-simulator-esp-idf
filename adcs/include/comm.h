@@ -8,9 +8,7 @@
 #define SERCOM_USB  Serial
 #define SERCOM_UART Serial1
 #define SERCOM_I2C  Wire
-
-// Value of IMU1 address bit 0
-#define AD0_VAL 1
+#define AD0_VAL     0
 
 // packet sizes in bytes
 #define COMMAND_LEN 4

@@ -18,8 +18,11 @@ DRV10970::DRV10970(int fg, int fr, int brkmod, int pwm, int rd){
     // set pin modes
     pinMode(FG, INPUT);
     pinMode(FR, OUTPUT);
-    pinMode(BRKMOD, OUTPUT);
+    digitalWrite(FR, LOW);
+    //pinMode(BRKMOD, OUTPUT); // this pin not currently exposed
     pinMode(PWM, OUTPUT);
+    stop(); // make sure the motor output pin is not floating initially
+
     pinMode(RD, INPUT);
 }
 
@@ -42,22 +45,26 @@ void DRV10970::run(MotorDirection dir, int dc){
  *      NOTE: pwm must be low for at least 1.2ms to enter low power mode
  */
 void DRV10970::stop(){
-    digitalWrite(PWM, 0);
+    analogWrite(PWM, LOW);
 }
 
 /*
  * Read the RPM of the spindle using the FG pin to measure frequency.
  */
-int DRV10970::readRPM(){
+int DRV10970::readRPM(bool debug=false){
     long int t0 = millis(); // read start time
     long int cT = millis(); // current time
     int gap = 10;                    // milliseconds to measure for
     int toggles = 0;                 // set number of electrical toggles
-    int state = digitalRead(FG);     // state variable
-    while(t0 - cT < gap){
-        int cState = digitalRead(FG); // the current state of the FG pin
-        if(state != cState){ // if has toggled, count it
-            state = cState;
+    int prev_state = digitalRead(FG);     // state variable
+    int cState;
+    while(cT - t0 < gap){
+        cState = digitalRead(FG); // the current state of the FG pin
+
+        if(debug) Serial.println(cState);
+        
+        if(prev_state != cState){ // if has toggled, count it
+            prev_state = cState;
             toggles++;
         }
         cT = millis();
@@ -67,9 +74,9 @@ int DRV10970::readRPM(){
     // probably something like
     // toggles gap
 
-    //We are assuming here that 1 "toggle" is equal to 1 full rotation of the spindle. If we record for 1s, you can multiply the 
+    //We are assuming here that 1 "toggle" is equal to 1 full rotation of the spindle. If we record for 1s, you can multiply the
     //value we get by 60; which would give us the revolutions per min (RPM). *IN THEORY*
-    toggles = toggles*60; 
+    //toggles = toggles*60;
 
 
     return toggles;
@@ -79,5 +86,5 @@ int DRV10970::readRPM(){
  * Read the RD pin to determine if the spindle is currently locked (HIGH).
  */
 bool DRV10970::spindleFree(){
-    return digitalRead(RD) != HIGH;
+    return digitalRead(RD) == HIGH;
 }
