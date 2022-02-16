@@ -57,7 +57,7 @@ static void writeUART(void *pvParameters);
 void setup()
 {
 	// DRV10970 object, connected to the motor driver of the flywheel
-	DRV10970* DRV;
+	DRV10970 *DRV;
 
 	// Create a counting semaphore with a maximum value of 1 and an initial
 	// value of 0. Starts ADCS in standby mode.
@@ -122,8 +122,8 @@ void setup()
 	 * Initialize second IMU
 	 * Address: 0x68 or 0x69
 	 */
-    IMU2.begin(SERCOM_I2C, (~AD0_VAL)&1);  // initialize other IMU with opposite
-										   // value for bit 0
+    IMU2.begin(SERCOM_I2C, AD0_VAL^1);  // initialize other IMU with opposite
+										// value for bit 0
     while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                                // complete
 	#ifdef DEBUG
@@ -158,7 +158,7 @@ void setup()
 
     // initialization completed, notify satellite
 	ADCSdata data_packet;
-    data_packet.setStatus(HELLO);
+    data_packet.setStatus(STATUS_HELLO);
     data_packet.computeCRC();
     data_packet.send();
 
@@ -176,7 +176,7 @@ void setup()
     // should never be reached if everything goes right
     while (1)
 	{
-		data_packet.setStatus(ADCS_ERROR);
+		data_packet.setStatus(STATUS_ADCS_ERROR);
 		data_packet.computeCRC();
 		data_packet.send();
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -215,21 +215,23 @@ static void readUART(void *pvParameters)
         {							  // receive buffer
 
             // copy one byte out of UART receive buffer
-            cmd_packet.addByte((uint8_t)SERCOM_UART.read());
+			cmd_packet.addByte((uint8_t)SERCOM_UART.read());
 
-            if (cmd_packet.isFull())  // full command packet received
+			if (cmd_packet.isFull())  // full command packet received
             {
 				if (cmd_packet.checkCRC())
 				{
-					if (cmd_packet.getCommand() == TEST)
+					// process command if CRC is valid
+					if (cmd_packet.getCommand() == CMD_TEST)
 						mode = MODE_TEST;
 
-					if (cmd_packet.getCommand() == STANDBY)
+					if (cmd_packet.getCommand() == CMD_STANDBY)
 						mode = MODE_STANDBY;
 				}
 				else
                 {
-					response.setStatus(COMM_ERROR);
+					// send error message if CRC is not valid
+					response.setStatus(STATUS_COMM_ERROR);
 					response.computeCRC();
 					response.send();
 				}
@@ -245,10 +247,10 @@ static void readUART(void *pvParameters)
                 SERCOM_USB.print(cmd_str);
                 SERCOM_USB.print("\r\n");
 
-                if (cmd_packet.getCommand() == TEST)
+                if (cmd_packet.getCommand() == CMD_TEST)
                     SERCOM_USB.print("Entering test mode\r\n");
 
-                if (cmd_packet.getCommand() == STANDBY)
+                if (cmd_packet.getCommand() == CMD_STANDBY)
                     SERCOM_USB.print("Entering standby mode\r\n");
 #endif
             }
@@ -285,7 +287,7 @@ static void writeUART(void *pvParameters)
 
         if (mode == MODE_TEST)
         {
-			data_packet.setStatus(OK);
+			data_packet.setStatus(STATUS_OK);
 			readIMU(data_packet);
 			readINA(data_packet);
 			data_packet.computeCRC();
