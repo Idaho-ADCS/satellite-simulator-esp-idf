@@ -146,6 +146,9 @@ void setup()
 	/**
 	 * Calibrate INA209
 	 * Current LSB: 100uA
+	 * 
+	 * Can also use 0x6aaa to prevent overflow
+	 * 7fff seems to be more accurate though
 	 */
     ina209.writeCal(0x7fff);
     
