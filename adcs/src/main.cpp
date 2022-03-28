@@ -18,6 +18,8 @@
 // if defined, enables debug print statements over USB to the serial monitor
 #define DEBUG
 
+#define INA
+
 /* NON-RTOS GLOBAL VARIABLES ================================================ */
 
 /**
@@ -61,7 +63,7 @@ void setup()
 	// Create a counting semaphore with a maximum value of 1 and an initial
 	// value of 0. Starts ADCS in standby mode.
 	modeQ = xQueueCreate(1, sizeof(uint8_t));
-	uint8_t mode = MODE_TEST;
+	uint8_t mode = MODE_STANDBY;
 	xQueueSend(modeQ, (void*)&mode, (TickType_t)0);
 
 	// enable LED
@@ -130,6 +132,7 @@ void setup()
 	#endif
 #endif
 
+#ifdef INA
 	/**
 	 * Write default settings to INA209
 	 * Reset: no
@@ -145,11 +148,15 @@ void setup()
 	/**
 	 * Calibrate INA209
 	 * Current LSB: 100uA
+	 * 
+	 * Can also use 0x6aaa to prevent overflow
+	 * 7fff seems to be more accurate though
 	 */
     ina209.writeCal(0x7fff);
     
-#ifdef DEBUG
+	#ifdef DEBUG
     SERCOM_USB.write("INA209 initialized\r\n");
+	#endif
 #endif
 
     // initialization completed, notify satellite
@@ -159,7 +166,7 @@ void setup()
     data_packet.send();
 
     // instantiate tasks and start scheduler
-    // xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
+    xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
     xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
     // TODO: schedule task for INA209 read
 
@@ -215,25 +222,6 @@ static void readUART(void *pvParameters)
 
 			if (cmd_packet.isFull())  // full command packet received
             {
-				if (cmd_packet.checkCRC())
-				{
-					// process command if CRC is valid
-					if (cmd_packet.getCommand() == CMD_TEST)
-						mode = MODE_TEST;
-
-					if (cmd_packet.getCommand() == CMD_STANDBY)
-						mode = MODE_STANDBY;
-				}
-				else
-                {
-					// send error message if CRC is not valid
-					response.setStatus(STATUS_COMM_ERROR);
-					response.computeCRC();
-					response.send();
-				}
-
-				xQueueOverwrite(modeQ, (void*)&mode);  // enter specified mode
-
 #ifdef DEBUG
                 // convert int to string for USB monitoring
                 sprintf(cmd_str, "0x%02x", cmd_packet.getCommand());
@@ -242,13 +230,39 @@ static void readUART(void *pvParameters)
                 SERCOM_USB.print("Command received: ");
                 SERCOM_USB.print(cmd_str);
                 SERCOM_USB.print("\r\n");
-
-                if (cmd_packet.getCommand() == CMD_TEST)
-                    SERCOM_USB.print("Entering test mode\r\n");
-
-                if (cmd_packet.getCommand() == CMD_STANDBY)
-                    SERCOM_USB.print("Entering standby mode\r\n");
 #endif
+
+				// if (cmd_packet.checkCRC())
+				// {
+					// process command if CRC is valid
+					if (cmd_packet.getCommand() == CMD_TEST)
+					{
+						mode = MODE_TEST;
+#ifdef DEBUG
+						SERCOM_USB.write("Entering test mode\n");
+#endif
+					}
+
+					if (cmd_packet.getCommand() == CMD_STANDBY)
+					{
+						mode = MODE_STANDBY;
+#ifdef DEBUG
+						SERCOM_USB.write("Entering standby mode\n");
+#endif
+					}
+// 				}
+// 				else
+//                 {
+// 					// send error message if CRC is not valid
+// 					response.setStatus(STATUS_COMM_ERROR);
+// 					response.computeCRC();
+// 					response.send();
+// #ifdef DEBUG
+// 					SERCOM_USB.write("CRC check failed\n");
+// #endif
+// 				}
+
+				xQueueOverwrite(modeQ, (void*)&mode);  // enter specified mode
             }
         }
 
@@ -285,7 +299,9 @@ static void writeUART(void *pvParameters)
         {
 			data_packet.setStatus(STATUS_OK);
 			readIMU(data_packet);
+#ifdef INA
 			readINA(data_packet);
+#endif
 			data_packet.computeCRC();
 			data_packet.send();  // send to TES
 #ifdef DEBUG
