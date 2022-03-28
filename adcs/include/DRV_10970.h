@@ -29,7 +29,7 @@ class DRV10970 {
         DRV10970(int fg, int fr, int brkmod, int pwm, int rd);
         void run(MotorDirection dir, int dc); // drive motor in direction at dutycycle dc
         void stop(); // stop motor driver and put in low power state
-        int readRPM(); // returns the rpm of motor spindle
+        int readRPM(bool); // returns the rpm of motor spindle
         bool spindleFree(); // returns true if motor spindle is free to spin
  };
 #endif
