@@ -1,0 +1,32 @@
+menu "Example Configuration"
+
+    config ESP_WIFI_SSID
+        string "WiFi SSID"
+        default "myssid"
+        help
+            SSID (network name) for the example to connect to.
+
+    config ESP_WIFI_PASSWORD
+        string "WiFi Password"
+        default "mypassword"
+        help
+            WiFi password (WPA or WPA2) for the example to use.
+
+    config ESP_MAXIMUM_RETRY
+        int "Maximum retry"
+        default 5
+        help
+            Set the Maximum retry to avoid station reconnecting to the AP unlimited when the AP is really inexistent.
+
+	config SERVER_IP
+		string "IP address"
+		default "192.168.1.1"
+		help
+			Set the IP address of the machine to communicate with.
+
+	config ESP_TCP_MESSAGE
+		string "TCP message"
+		default "Hello world!"
+		help
+			Set the message to be sent over TCP.
+endmenu
