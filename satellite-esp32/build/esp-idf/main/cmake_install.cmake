@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/p-squared/esp/esp-idf/examples/protocols/http_server/restful_server/main
+# Install script for directory: C:/Users/p-squared/ADCS/satellite-esp32/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

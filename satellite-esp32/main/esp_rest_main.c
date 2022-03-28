@@ -23,6 +23,8 @@
 #include "driver/sdmmc_host.h"
 #endif
 
+#define GPIO_ENABLE 0
+
 #define MDNS_INSTANCE "esp home web server"
 
 static const char *TAG = "example";
@@ -125,6 +127,10 @@ esp_err_t init_fs(void)
 
 void app_main(void)
 {
+	gpio_reset_pin(GPIO_ENABLE);
+	gpio_set_direction(GPIO_ENABLE, GPIO_MODE_OUTPUT);
+	gpio_set_level(GPIO_ENABLE, 1);
+
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());

@@ -34,7 +34,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("C:/Users/p-squared/esp/esp-idf/examples/protocols/http_server/restful_server/build/esp-idf/mbedtls/mbedtls/cmake_install.cmake")
+  include("C:/Users/p-squared/ADCS/satellite-esp32/build/esp-idf/mbedtls/mbedtls/cmake_install.cmake")
 
 endif()
 

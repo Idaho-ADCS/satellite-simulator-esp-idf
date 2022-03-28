@@ -1,4 +1,4 @@
-/* * Data converted from C:/Users/p-squared/esp/esp-idf/examples/protocols/http_server/restful_server/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from C:/Users/p-squared/ADCS/satellite-esp32/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded
