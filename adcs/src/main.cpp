@@ -4,6 +4,8 @@
 #include "supportFunctions.h"
 #include "commandFunctions.h"
 #include "DRV_10970.h"
+// only include this if test functions are desired
+//#include <test.h>
 
 // Arduino library headers
 #include "INA209.h"
@@ -58,9 +60,6 @@ static void writeUART(void *pvParameters);
  */
 void setup()
 {
-	// DRV10970 object, connected to the motor driver of the flywheel
-	DRV10970 *DRV;
-
 	// Create a counting semaphore with a maximum value of 1 and an initial
 	// value of 0. Starts ADCS in standby mode.
 	modeQ = xQueueCreate(1, sizeof(uint8_t));

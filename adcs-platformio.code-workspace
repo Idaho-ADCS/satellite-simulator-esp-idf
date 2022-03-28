@@ -1,15 +1,7 @@
 {
 	"folders": [
 		{
-			"path": "adcs"
-		},
-		{
-			"name": "satellite",
-			"path": "satellite"
-		},
-		{
-			"name": "esp32-kaluga-test",
-			"path": "..\\esp32-kaluga-test"
+			"path": "scan"
 		}
 	],
 	"settings": {
