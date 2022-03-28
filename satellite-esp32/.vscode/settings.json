@@ -1,4 +1,4 @@
 {
 	"idf.adapterTargetName": "esp32s2",
-	"idf.portWin": "COM4"
+	"idf.portWin": "COM3"
 }

@@ -24,6 +24,7 @@
 #endif
 
 #define GPIO_ENABLE 0
+#define MDNS_HOST_NAME "adcs-test-rig"
 
 #define MDNS_INSTANCE "esp home web server"
 
@@ -129,14 +130,14 @@ void app_main(void)
 {
 	gpio_reset_pin(GPIO_ENABLE);
 	gpio_set_direction(GPIO_ENABLE, GPIO_MODE_OUTPUT);
-	gpio_set_level(GPIO_ENABLE, 1);
+	gpio_set_level(GPIO_ENABLE, 0);
 
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     initialise_mdns();
     netbiosns_init();
-    netbiosns_set_name(CONFIG_EXAMPLE_MDNS_HOST_NAME);
+    netbiosns_set_name(MDNS_HOST_NAME);
 
     ESP_ERROR_CHECK(example_connect());
     ESP_ERROR_CHECK(init_fs());
