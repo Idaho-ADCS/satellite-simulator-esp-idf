@@ -6,6 +6,9 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+
+#include "comm.h"
+
 #include <string.h>
 #include <fcntl.h>
 #include "esp_http_server.h"
@@ -13,8 +16,15 @@
 #include "esp_log.h"
 #include "esp_vfs.h"
 #include "cJSON.h"
+#include "driver/gpio.h"
 
-static const char *REST_TAG = "esp-rest";
+#define GPIO_ENABLE 0
+
+static const char *REST_TAG = "tes-rest";
+
+extern ADCSdata packet_global;
+// extern int num_packets;
+
 #define REST_CHECK(a, str, goto_tag, ...)                                              \
     do                                                                                 \
     {                                                                                  \
@@ -105,8 +115,7 @@ static esp_err_t rest_common_get_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-/* Simple handler for light brightness control */
-static esp_err_t light_brightness_post_handler(httpd_req_t *req)
+static esp_err_t adcs_enable_post_handler(httpd_req_t *req)
 {
     int total_len = req->content_len;
     int cur_len = 0;
@@ -129,12 +138,128 @@ static esp_err_t light_brightness_post_handler(httpd_req_t *req)
     buf[total_len] = '\0';
 
     cJSON *root = cJSON_Parse(buf);
-    int red = cJSON_GetObjectItem(root, "red")->valueint;
-    int green = cJSON_GetObjectItem(root, "green")->valueint;
-    int blue = cJSON_GetObjectItem(root, "blue")->valueint;
-    ESP_LOGI(REST_TAG, "Light control: red = %d, green = %d, blue = %d", red, green, blue);
-    cJSON_Delete(root);
-    httpd_resp_sendstr(req, "Post control value successfully");
+    int enable = cJSON_GetObjectItem(root, "enable")->valueint;
+	gpio_set_level(GPIO_ENABLE, enable);
+    ESP_LOGI(REST_TAG, "ADCS enable: %d", enable);
+	cJSON_Delete(root);
+
+	if (enable)
+    	httpd_resp_sendstr(req, "Enabled ADCS");
+	else
+		httpd_resp_sendstr(req, "Disabled ADCS");
+
+    return ESP_OK;
+}
+
+static esp_err_t adcs_mode_post_handler(httpd_req_t *req)
+{
+    int total_len = req->content_len;
+    int cur_len = 0;
+    char *buf = ((rest_server_context_t *)(req->user_ctx))->scratch;
+    int received = 0;
+    if (total_len >= SCRATCH_BUFSIZE) {
+        /* Respond with 500 Internal Server Error */
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "content too long");
+        return ESP_FAIL;
+    }
+    while (cur_len < total_len) {
+        received = httpd_req_recv(req, buf + cur_len, total_len);
+        if (received <= 0) {
+            /* Respond with 500 Internal Server Error */
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to post control value");
+            return ESP_FAIL;
+        }
+        cur_len += received;
+    }
+    buf[total_len] = '\0';
+
+    cJSON *root = cJSON_Parse(buf);
+    int mode = cJSON_GetObjectItem(root, "mode")->valueint;
+    ESP_LOGI(REST_TAG, "ADCS mode: %d", mode);
+	cJSON_Delete(root);
+
+	switch (mode)
+	{
+		case 0:
+		send_command(CMD_STANDBY);
+    	httpd_resp_sendstr(req, "Set ADCS mode to standby");
+		break;
+
+		case 1:
+		send_command(CMD_TEST);
+		httpd_resp_sendstr(req, "Set ADCS mode to measure");
+		break;
+
+		default:
+		httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Mode not recognized");
+		return ESP_FAIL;
+	}
+	
+    return ESP_OK;
+}
+
+static esp_err_t adcs_data_get_handler(httpd_req_t *req)
+{
+	ADCSdata packet_copy;
+	// const int len = num_packets;
+
+	// int i;
+	// for (i = 0; i < len; i++)
+	// {
+	// 	packets_copy[len-i-1] = packets[len-i-1];
+	// 	num_packets--;
+	// }
+
+	int i;
+	for (i = 0; i < PACKET_LEN; i++)
+	{
+		packet_copy._data[i] = packet_global._data[i];
+	}
+	packet_copy._seq = packet_global._seq;
+
+    httpd_resp_set_type(req, "application/json");
+	// cJSON *arr = cJSON_CreateArray();
+
+	// for (i = 0; i < len; i++)
+	// {
+		cJSON *obj = cJSON_CreateObject();
+		cJSON_AddNumberToObject(obj, "seq", packet_copy._seq);
+		
+		if (packet_copy._status == STATUS_HELLO)
+			cJSON_AddStringToObject(obj, "status", "HELLO");
+		if (packet_copy._status == STATUS_OK)
+			cJSON_AddStringToObject(obj, "status", "OK");
+		if (packet_copy._status == STATUS_COMM_ERROR)
+			cJSON_AddStringToObject(obj, "status", "COMM ERROR");
+		if (packet_copy._status == STATUS_ADCS_ERROR)
+			cJSON_AddStringToObject(obj, "status", "SYSTEM ERROR");
+
+		cJSON_AddNumberToObject(obj, "voltage", fixedToFloat(packet_copy._voltage));
+		cJSON_AddNumberToObject(obj, "current", packet_copy._current);
+		cJSON_AddNumberToObject(obj, "speed", packet_copy._speed);
+		cJSON_AddNumberToObject(obj, "magx", packet_copy._magX);
+		cJSON_AddNumberToObject(obj, "magy", packet_copy._magY);
+		cJSON_AddNumberToObject(obj, "magz", packet_copy._magZ);
+		cJSON_AddNumberToObject(obj, "gyrox", fixedToFloat(packet_copy._gyroX));
+		cJSON_AddNumberToObject(obj, "gyroy", fixedToFloat(packet_copy._gyroY));
+		cJSON_AddNumberToObject(obj, "gyroz", fixedToFloat(packet_copy._gyroZ));
+
+		// cJSON_AddItemToArray(arr, obj);
+
+		// cJSON_Delete(obj);
+	// }
+
+
+
+    // cJSON *root = cJSON_CreateObject();
+    // esp_chip_info_t chip_info;
+    // esp_chip_info(&chip_info);
+    // cJSON_AddStringToObject(root, "version", IDF_VER);
+    // cJSON_AddNumberToObject(root, "cores", chip_info.cores);
+    const char *data = cJSON_Print(obj);
+    httpd_resp_sendstr(req, data);
+    free((void *)data);
+    cJSON_Delete(obj);
     return ESP_OK;
 }
 
@@ -199,14 +324,29 @@ esp_err_t start_rest_server(const char *base_path)
     };
     httpd_register_uri_handler(server, &temperature_data_get_uri);
 
-    /* URI handler for light brightness control */
-    httpd_uri_t light_brightness_post_uri = {
-        .uri = "/api/v1/light/brightness",
+	httpd_uri_t adcs_enable_post_uri = {
+        .uri = "/api/adcs/enable",
         .method = HTTP_POST,
-        .handler = light_brightness_post_handler,
+        .handler = adcs_enable_post_handler,
         .user_ctx = rest_context
     };
-    httpd_register_uri_handler(server, &light_brightness_post_uri);
+    httpd_register_uri_handler(server, &adcs_enable_post_uri);
+
+	httpd_uri_t adcs_mode_post_uri = {
+        .uri = "/api/adcs/mode",
+        .method = HTTP_POST,
+        .handler = adcs_mode_post_handler,
+        .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &adcs_mode_post_uri);
+
+	httpd_uri_t adcs_data_get_uri = {
+        .uri = "/api/adcs/data",
+        .method = HTTP_GET,
+        .handler = adcs_data_get_handler,
+        .user_ctx = rest_context
+    };
+    httpd_register_uri_handler(server, &adcs_data_get_uri);
 
     /* URI handler for getting web server files */
     httpd_uri_t common_get_uri = {

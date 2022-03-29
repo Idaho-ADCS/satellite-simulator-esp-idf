@@ -6,6 +6,9 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+
+#include "comm.h"
+
 #include "sdkconfig.h"
 #include "driver/gpio.h"
 #include "esp_vfs_semihost.h"
@@ -28,7 +31,7 @@
 
 #define MDNS_INSTANCE "esp home web server"
 
-static const char *TAG = "example";
+static const char *TAG = "tes";
 
 esp_err_t start_rest_server(const char *base_path);
 
@@ -131,6 +134,8 @@ void app_main(void)
 	gpio_reset_pin(GPIO_ENABLE);
 	gpio_set_direction(GPIO_ENABLE, GPIO_MODE_OUTPUT);
 	gpio_set_level(GPIO_ENABLE, 0);
+
+	init_uart();
 
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());

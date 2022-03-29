@@ -8,11 +8,11 @@
 #define SERCOM_USB  Serial
 #define SERCOM_UART Serial1
 #define SERCOM_I2C  Wire
-#define AD0_VAL     0
+#define AD0_VAL     1
 
 // packet sizes in bytes
 #define COMMAND_LEN 4
-#define PACKET_LEN  12
+#define PACKET_LEN  13
 
 // command values
 enum Command : uint8_t
@@ -95,7 +95,7 @@ private:
 			// Data can be accessed as fields - used to build packet
 			uint8_t    _status;
 			fixed5_3_t _voltage;
-			int8_t     _current;
+			int16_t    _current;
 			uint8_t    _speed;
 			int8_t     _magX;
 			int8_t	   _magY;

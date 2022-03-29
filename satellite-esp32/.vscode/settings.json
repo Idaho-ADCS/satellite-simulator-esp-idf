@@ -1,4 +1,9 @@
 {
 	"idf.adapterTargetName": "esp32s2",
-	"idf.portWin": "COM3"
+	"idf.portWin": "COM12",
+	"files.associations": {
+		"istream": "c",
+		"ostream": "c",
+		"*.inc": "c"
+	}
 }

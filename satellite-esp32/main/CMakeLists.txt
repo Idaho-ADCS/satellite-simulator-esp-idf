@@ -1,5 +1,6 @@
 idf_component_register(SRCS "esp_rest_main.c"
                             "rest_server.c"
+							"comm.c"
                     INCLUDE_DIRS ".")
 
 if(CONFIG_EXAMPLE_WEB_DEPLOY_SF)

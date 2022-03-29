@@ -16,9 +16,9 @@
 #include <stdint.h>
 
 // if defined, enables debug print statements over USB to the serial monitor
-#define DEBUG
+// #define DEBUG
 
-#define INA
+// #define INA
 
 /* NON-RTOS GLOBAL VARIABLES ================================================ */
 
@@ -70,11 +70,11 @@ void setup()
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, HIGH);
 
-	pinMode(9, OUTPUT);
-	digitalWrite(9, HIGH);
+	// pinMode(9, OUTPUT);
+	// digitalWrite(9, HIGH);
 
-	pinMode(10, OUTPUT);
-	analogWrite(10, 127);
+	// pinMode(10, OUTPUT);
+	// analogWrite(10, 127);
 
 #ifdef DEBUG
     /**
@@ -312,7 +312,7 @@ static void writeUART(void *pvParameters)
 			data_packet.clear();
         }
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
 
