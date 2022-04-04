@@ -1,17 +1,76 @@
+#include "flags.h"
 #include "sensors.h"
 
-extern ICM_20948_I2C IMU1;
-#ifdef TWO_IMUS
-extern ICM_20948_I2C IMU2;
+ICM_20948_I2C IMU1;
+ICM_20948_I2C IMU2;
+
+INA209 ina209;
+
+/* HARDWARE INIT FUNCTIONS ================================================== */
+
+void initIMU(void)
+{
+	/**
+	 * Initialize first IMU
+	 * Address: 0x69 or 0x68
+	 */
+    IMU1.begin(SERCOM_I2C, AD0_VAL);
+    while (IMU1.status != ICM_20948_Stat_Ok);  // wait for initialization to
+                                               // complete
+#ifdef DEBUG
+    SERCOM_USB.write("IMU1 initialized\r\n");
 #endif
 
-extern INA209 ina209;
+#if NUM_IMUS >= 2
+	/**
+	 * Initialize second IMU
+	 * Address: 0x68 or 0x69
+	 */
+    IMU2.begin(SERCOM_I2C, AD0_VAL^1);  // initialize other IMU with opposite
+										// value for bit 0
+    while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
+                                               // complete
+	#ifdef DEBUG
+    SERCOM_USB.write("IMU2 initialized\r\n");
+	#endif
+#endif
+}
+
+void initINA(void)
+{
+	/**
+	 * Write default settings to INA209
+	 * Reset: no
+	 * Bus voltage range: 32V
+	 * PGA gain: /8
+	 * PGA range: +-320mV
+	 * ADC resolution: 12 bits
+	 * ADC conversion time: 532us
+	 * Mode: shunt and bus, continuous
+	 */
+    ina209.writeCfgReg(0x399f);
+
+	/**
+	 * Calibrate INA209
+	 * Current LSB: 100uA
+	 * 
+	 * Can also use 0x6aaa to prevent overflow
+	 * 7fff seems to be more accurate though
+	 */
+    ina209.writeCal(0x7fff);
+    
+#ifdef DEBUG
+    SERCOM_USB.write("INA209 initialized\r\n");
+#endif
+}
+
+/* SENSOR READING FUNCTIONS ================================================= */
 
 void readIMU(ADCSdata &data_packet)
 {
 	ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
                                         // a pointer
-#ifdef TWO_IMUS
+#if NUM_IMUS >= 2
 	ICM_20948_I2C *sensor_ptr2 = &IMU2; // IMU data can only be accessed through
                                         // a pointer
 #endif
@@ -21,12 +80,10 @@ void readIMU(ADCSdata &data_packet)
 	if (IMU1.dataReady())
 		IMU1.getAGMT();  // acquires data from sensor
 
-#ifdef TWO_IMUS
+#if NUM_IMUS >= 2
 	if (IMU2.dataReady())
 		IMU2.getAGMT();
-#endif
 
-#ifdef TWO_IMUS
 	// extract data from IMU object
 	mx = (sensor_ptr1->magY() + sensor_ptr2->magY()) / 2;
 	my = (sensor_ptr1->magX() + sensor_ptr2->magX()) / 2;
@@ -63,18 +120,6 @@ void readINA(ADCSdata &data_packet)
 	current = i_raw / 10;
 
 	data_packet.setINAdata(voltage, current);
-
-#if 0
-	char debug_str[32];
-	sprintf(debug_str, "%d", v_raw);
-	SERCOM_USB.write("Bus voltage: ");
-	SERCOM_USB.write(debug_str);
-	SERCOM_USB.write(" mV\r\n");
-	sprintf(debug_str, "%d", current);
-	SERCOM_USB.write("Shunt current: ");
-	SERCOM_USB.write(debug_str);
-	SERCOM_USB.write(" mA\r\n");
-#endif
 }
 
 void printPaddedInt16b(int16_t val)

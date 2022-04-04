@@ -22,18 +22,6 @@
 
 /* NON-RTOS GLOBAL VARIABLES ================================================ */
 
-/**
- * @brief
- * IMU objects, attached to IMUs. Used to read data from IMUs.
- */
-ICM_20948_I2C IMU1;
-#ifdef TWO_IMUS
-ICM_20948_I2C IMU2;
-#endif
-
-// INA209 object
-INA209 ina209(0x40);
-
 /* RTOS GLOBAL VARIABLES ==================================================== */
 
 /**
@@ -107,56 +95,12 @@ void setup()
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
 
-	/**
-	 * Initialize first IMU
-	 * Address: 0x69 or 0x68
-	 */
-    IMU1.begin(SERCOM_I2C, AD0_VAL);
-    while (IMU1.status != ICM_20948_Stat_Ok);  // wait for initialization to
-                                               // complete
-#ifdef DEBUG
-    SERCOM_USB.write("IMU1 initialized\r\n");
-#endif
-
-#ifdef TWO_IMUS
-	/**
-	 * Initialize second IMU
-	 * Address: 0x68 or 0x69
-	 */
-    IMU2.begin(SERCOM_I2C, AD0_VAL^1);  // initialize other IMU with opposite
-										// value for bit 0
-    while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
-                                               // complete
-	#ifdef DEBUG
-    SERCOM_USB.write("IMU2 initialized\r\n");
-	#endif
+#if NUM_IMUS > 0
+	initIMU();
 #endif
 
 #ifdef INA
-	/**
-	 * Write default settings to INA209
-	 * Reset: no
-	 * Bus voltage range: 32V
-	 * PGA gain: /8
-	 * PGA range: +-320mV
-	 * ADC resolution: 12 bits
-	 * ADC conversion time: 532us
-	 * Mode: shunt and bus, continuous
-	 */
-    ina209.writeCfgReg(0x399f);
-
-	/**
-	 * Calibrate INA209
-	 * Current LSB: 100uA
-	 * 
-	 * Can also use 0x6aaa to prevent overflow
-	 * 7fff seems to be more accurate though
-	 */
-    ina209.writeCal(0x7fff);
-    
-	#ifdef DEBUG
-    SERCOM_USB.write("INA209 initialized\r\n");
-	#endif
+	initINA();
 #endif
 
     // initialization completed, notify satellite

@@ -5,8 +5,38 @@
 #include "ICM_20948.h"
 #include "INA209.h"
 
+#define NUM_IMUS 1
+#define INA
+
+/* DATA TYPES =============================================================== */
+
+typedef struct
+{
+	float magX;
+	float magY;
+	float magZ;
+	float gyrX;
+	float gyrY;
+	float gyrZ;
+} IMUdata;
+
+typedef struct
+{
+	float voltage;
+	int current;
+} INAdata;
+
+/* HARDWARE INIT FUNCTIONS ================================================== */
+
+void initIMU(void);
+void initINA(void);
+
+/* SENSOR READING FUNCTIONS ================================================= */
+
 void readIMU(ADCSdata &data_packet);
 void readINA(ADCSdata &data_packet);
+
+/* PRINTING FUNCTIONS ======================================================= */
 
 // "helper" functions from IMU demo code that print sensor data to serial
 // monitor over USB
