@@ -75,7 +75,7 @@ void ADCSdata::setStatus(uint8_t s)
 void ADCSdata::setINAdata(float v, float i)
 {
 	_voltage = floatToFixed(v);
-	_current = (int8_t)(i / 10);
+	_current = (int8_t)i;
 }
 
 void ADCSdata::setIMUdata(float mx, float my, float mz, float gx, float gy, float gz)

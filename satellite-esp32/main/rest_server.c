@@ -139,6 +139,10 @@ static esp_err_t adcs_enable_post_handler(httpd_req_t *req)
 
     cJSON *root = cJSON_Parse(buf);
     int enable = cJSON_GetObjectItem(root, "enable")->valueint;
+
+	if (!enable)
+		send_command(CMD_STANDBY);
+	
 	gpio_set_level(GPIO_ENABLE, enable);
     ESP_LOGI(REST_TAG, "ADCS enable: %d", enable);
 	cJSON_Delete(root);

@@ -51,7 +51,7 @@ void readIMU(ADCSdata &data_packet)
 void readINA(ADCSdata &data_packet)
 {
 	float voltage;
-	float current;
+	int current;
 
 	int v_raw;
 	int i_raw;
@@ -59,7 +59,7 @@ void readINA(ADCSdata &data_packet)
 	v_raw = ina209.busVol();
 	i_raw = ina209.current();
 
-	voltage = v_raw / 1000;
+	voltage = v_raw / 1000.0f;
 	current = i_raw / 10;
 
 	data_packet.setINAdata(voltage, current);
@@ -70,10 +70,10 @@ void readINA(ADCSdata &data_packet)
 	SERCOM_USB.write("Bus voltage: ");
 	SERCOM_USB.write(debug_str);
 	SERCOM_USB.write(" mV\r\n");
-	sprintf(debug_str, "%d", i_raw*100);
+	sprintf(debug_str, "%d", current);
 	SERCOM_USB.write("Shunt current: ");
 	SERCOM_USB.write(debug_str);
-	SERCOM_USB.write(" uA\r\n");
+	SERCOM_USB.write(" mA\r\n");
 #endif
 }
 

@@ -5,5 +5,9 @@
 		"istream": "c",
 		"ostream": "c",
 		"*.inc": "c"
-	}
+	},
+	"idf.openOcdConfigs": [
+		"interface/ftdi/esp32_devkitj_v1.cfg",
+		"target/esp32s2.cfg"
+	]
 }

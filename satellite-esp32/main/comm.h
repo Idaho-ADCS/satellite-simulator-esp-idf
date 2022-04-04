@@ -60,8 +60,8 @@ typedef struct
 	};
 } ADCSdata;
 
-#define TXD_PIN (GPIO_NUM_4)
-#define RXD_PIN (GPIO_NUM_5)
+#define TXD_PIN (GPIO_NUM_1)
+#define RXD_PIN (GPIO_NUM_2)
 
 void init_uart(void);
 int send_command(uint8_t cmd);

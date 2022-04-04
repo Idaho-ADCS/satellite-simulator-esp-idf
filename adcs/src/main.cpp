@@ -18,7 +18,7 @@
 // if defined, enables debug print statements over USB to the serial monitor
 // #define DEBUG
 
-// #define INA
+#define INA
 
 /* NON-RTOS GLOBAL VARIABLES ================================================ */
 
@@ -305,7 +305,7 @@ static void writeUART(void *pvParameters)
 			data_packet.computeCRC();
 			data_packet.send();  // send to TES
 #ifdef DEBUG
-			// SERCOM_USB.write("Wrote to UART\r\n");
+			SERCOM_USB.write("Wrote to UART\r\n");
 			// printScaledAGMT(&IMU1);
 #endif
 
