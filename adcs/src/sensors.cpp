@@ -1,5 +1,6 @@
 #include "flags.h"
 #include "sensors.h"
+#include "comm.h"
 
 ICM_20948_I2C IMU1;
 ICM_20948_I2C IMU2;
@@ -66,16 +67,16 @@ void initINA(void)
 
 /* SENSOR READING FUNCTIONS ================================================= */
 
-void readIMU(ADCSdata &data_packet)
+IMUdata readIMU(void)
 {
+	IMUdata data;
+
 	ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
                                         // a pointer
 #if NUM_IMUS >= 2
 	ICM_20948_I2C *sensor_ptr2 = &IMU2; // IMU data can only be accessed through
                                         // a pointer
 #endif
-
-	float mx, my, mz, gx, gy, gz;
 
 	if (IMU1.dataReady())
 		IMU1.getAGMT();  // acquires data from sensor
@@ -85,30 +86,29 @@ void readIMU(ADCSdata &data_packet)
 		IMU2.getAGMT();
 
 	// extract data from IMU object
-	mx = (sensor_ptr1->magY() + sensor_ptr2->magY()) / 2;
-	my = (sensor_ptr1->magX() + sensor_ptr2->magX()) / 2;
-	mz = (sensor_ptr1->magZ() + sensor_ptr2->magZ()) / -2;
+	data.magX = (sensor_ptr1->magY() + sensor_ptr2->magY()) / 2;
+	data.magY = (sensor_ptr1->magX() + sensor_ptr2->magX()) / 2;
+	data.magZ = (sensor_ptr1->magZ() + sensor_ptr2->magZ()) / -2;
 
-	gx = (sensor_ptr1->gyrY() + sensor_ptr2->gyrY()) / 2;
-	gy = (sensor_ptr1->gyrX() + sensor_ptr2->gyrX()) / 2;
-	gz = (sensor_ptr1->gyrZ() + sensor_ptr2->gyrZ()) / -2;
+	data.gyrX = (sensor_ptr1->gyrY() + sensor_ptr2->gyrY()) / 2;
+	data.gyrY = (sensor_ptr1->gyrX() + sensor_ptr2->gyrX()) / 2;
+	data.gyrZ = (sensor_ptr1->gyrZ() + sensor_ptr2->gyrZ()) / -2;
 #else
-	mx = sensor_ptr1->magY();
-	my = sensor_ptr1->magX();
-	mz = sensor_ptr1->magZ() * -1;
+	data.magX = sensor_ptr1->magY();
+	data.magY = sensor_ptr1->magX();
+	data.magZ = sensor_ptr1->magZ() * -1;
 
-	gx = sensor_ptr1->gyrY();
-	gy = sensor_ptr1->gyrX();
-	gz = sensor_ptr1->gyrZ() * -1;
+	data.gyrX = sensor_ptr1->gyrY();
+	data.gyrY = sensor_ptr1->gyrX();
+	data.gyrZ = sensor_ptr1->gyrZ() * -1;
 #endif
 
-	data_packet.setIMUdata(mx, my, mz, gx, gy, gz);
+	return data;
 }
 
-void readINA(ADCSdata &data_packet)
+INAdata readINA(void)
 {
-	float voltage;
-	int current;
+	INAdata data;
 
 	int v_raw;
 	int i_raw;
@@ -116,11 +116,13 @@ void readINA(ADCSdata &data_packet)
 	v_raw = ina209.busVol();
 	i_raw = ina209.current();
 
-	voltage = v_raw / 1000.0f;
-	current = i_raw / 10;
+	data.voltage = v_raw / 1000.0f;
+	data.current = i_raw / 10;
 
-	data_packet.setINAdata(voltage, current);
+	return data;
 }
+
+/* PRINTING FUNCTIONS ======================================================= */
 
 void printPaddedInt16b(int16_t val)
 {

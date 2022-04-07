@@ -1,7 +1,6 @@
 #ifndef __SENSORS_H__
 #define __SENSORS_H__
 
-#include "comm.h"
 #include "ICM_20948.h"
 #include "INA209.h"
 
@@ -33,8 +32,8 @@ void initINA(void);
 
 /* SENSOR READING FUNCTIONS ================================================= */
 
-void readIMU(ADCSdata &data_packet);
-void readINA(ADCSdata &data_packet);
+IMUdata readIMU(void);
+INAdata readINA(void);
 
 /* PRINTING FUNCTIONS ======================================================= */
 

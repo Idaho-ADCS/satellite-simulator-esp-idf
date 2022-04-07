@@ -115,6 +115,46 @@ void ADCSdata::send()
 	SERCOM_UART.write((char*)_data, PACKET_LEN);
 }
 
+/* HARDWARE INIT FUNCTIONS ================================================== */
+
+void initUSB(void)
+{
+	/**
+     * Initialize USB connection to computer. Used to print debug messages.
+     * Baud rate: 115200
+     * Data bits: 8
+     * Parity: none
+     */
+    SERCOM_USB.begin(115200);
+    while (!SERCOM_USB);  // wait for initialization to complete
+    SERCOM_USB.write("USB interface initialized\r\n");
+}
+
+void initUART(void)
+{
+	/**
+     * Initialize UART connection to satellite
+     * Baud rate: 115200
+     * Data bits: 8
+     * Parity: odd (1 bit)
+     */
+    SERCOM_UART.begin(115200, SERIAL_8O1);
+    while (!SERCOM_UART);  // wait for initialization to complete
+#ifdef DEBUG
+    SERCOM_USB.write("UART interface initialized\r\n");
+#endif
+}
+
+void initI2C(void)
+{
+	/**
+     * Initialize I2C network
+     * Clock: 400 kHz
+     */
+    SERCOM_I2C.begin();
+    SERCOM_I2C.setClock(400000);
+}
+
 /* HELPER FUNCTIONS ========================================================= */
 
 /**

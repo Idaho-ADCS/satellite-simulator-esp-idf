@@ -1,4 +1,5 @@
 // Our own headers
+#include "flags.h"
 #include "comm.h"
 #include "sensors.h"
 #include "supportFunctions.h"
@@ -14,11 +15,6 @@
 
 // Standard C/C++ library headers
 #include <stdint.h>
-
-// if defined, enables debug print statements over USB to the serial monitor
-// #define DEBUG
-
-#define INA
 
 /* NON-RTOS GLOBAL VARIABLES ================================================ */
 
@@ -65,37 +61,13 @@ void setup()
 	// analogWrite(10, 127);
 
 #ifdef DEBUG
-    /**
-     * Initialize USB connection to computer. Used to print debug messages.
-     * Baud rate: 115200
-     * Data bits: 8
-     * Parity: none
-     */
-    SERCOM_USB.begin(115200);
-    while (!SERCOM_USB);  // wait for initialization to complete
-    SERCOM_USB.write("USB interface initialized\r\n");
+    initUSB();
 #endif
 
-    /**
-     * Initialize UART connection to satellite
-     * Baud rate: 115200
-     * Data bits: 8
-     * Parity: odd (1 bit)
-     */
-    SERCOM_UART.begin(115200, SERIAL_8O1);
-    while (!SERCOM_UART);  // wait for initialization to complete
-#ifdef DEBUG
-    SERCOM_USB.write("UART interface initialized\r\n");
-#endif
-
-    /**
-     * Initialize I2C network
-     * Clock: 400 kHz
-     */
-    SERCOM_I2C.begin();
-    SERCOM_I2C.setClock(400000);
+    initUART();
 
 #if NUM_IMUS > 0
+	initI2C();
 	initIMU();
 #endif
 
@@ -242,9 +214,9 @@ static void writeUART(void *pvParameters)
         if (mode == MODE_TEST)
         {
 			data_packet.setStatus(STATUS_OK);
-			readIMU(data_packet);
+			// readIMU(data_packet);
 #ifdef INA
-			readINA(data_packet);
+			// readINA(data_packet);
 #endif
 			data_packet.computeCRC();
 			data_packet.send();  // send to TES

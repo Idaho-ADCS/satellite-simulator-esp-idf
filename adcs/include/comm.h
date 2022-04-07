@@ -2,6 +2,7 @@
 #define __COMM_H__
 
 #include "CRC16.h"
+#include <Wire.h>
 #include <stdint.h>
 
 // create more descriptive names for serial interfaces
@@ -117,6 +118,12 @@ public:
 	void clear();
 	void send();
 };
+
+/* HARDWARE INIT FUNCTIONS ================================================== */
+
+void initUSB(void);
+void initUART(void);
+void initI2C(void);
 
 // fixed/float conversions
 fixed5_3_t floatToFixed(float f);
