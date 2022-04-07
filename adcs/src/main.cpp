@@ -31,7 +31,7 @@ QueueHandle_t modeQ;
 
 /* RTOS TASK DECLARATIONS =================================================== */
 
-static void readUART(void *pvParameters);
+static void receiveCommand(void *pvParameters);
 static void writeUART(void *pvParameters);
 
 /* "MAIN" =================================================================== */
@@ -82,9 +82,8 @@ void setup()
     data_packet.send();
 
     // instantiate tasks and start scheduler
-    xTaskCreate(readUART, "Read UART", 2048, NULL, 1, NULL);
+    xTaskCreate(receiveCommand, "Read UART", 2048, NULL, 1, NULL);
     xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
-    // TODO: schedule task for INA209 read
 
 #ifdef DEBUG
     SERCOM_USB.write("Tasks created\r\n");
@@ -118,7 +117,7 @@ void setup()
  * 
  * TODO: Remove polling and invoke this task using an interrupt instead.
  */
-static void readUART(void *pvParameters)
+static void receiveCommand(void *pvParameters)
 {
 	TEScommand cmd_packet;
 	ADCSdata response;
@@ -202,6 +201,8 @@ static void writeUART(void *pvParameters)
 {
 	uint8_t mode;
 	ADCSdata data_packet;
+	INAdata ina;
+	IMUdata imu;
 
 #ifdef DEBUG
 	char mode_str[8];
@@ -214,12 +215,20 @@ static void writeUART(void *pvParameters)
         if (mode == MODE_TEST)
         {
 			data_packet.setStatus(STATUS_OK);
-			// readIMU(data_packet);
-#ifdef INA
-			// readINA(data_packet);
+
+#if NUM_IMUS > 0
+			imu = readIMU();
+			data_packet.setIMUdata(imu);
 #endif
+
+#ifdef INA
+			ina = readINA();
+			data_packet.setINAdata(ina);
+#endif
+
 			data_packet.computeCRC();
 			data_packet.send();  // send to TES
+
 #ifdef DEBUG
 			SERCOM_USB.write("Wrote to UART\r\n");
 			// printScaledAGMT(&IMU1);

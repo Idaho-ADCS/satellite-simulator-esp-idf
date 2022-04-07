@@ -1,6 +1,7 @@
 #ifndef __COMM_H__
 #define __COMM_H__
 
+#include "sensors.h"
 #include "CRC16.h"
 #include <Wire.h>
 #include <stdint.h>
@@ -111,9 +112,11 @@ private:
 public:
 	ADCSdata();
 	void setStatus(uint8_t s);
-	void setINAdata(float v, float i);
+	// void setINAdata(float v, float i);
+	void setINAdata(INAdata data);
 	void setSpeed(float s);
-	void setIMUdata(float mx, float my, float mz, float gx, float gy, float gz);
+	// void setIMUdata(float mx, float my, float mz, float gx, float gy, float gz);
+	void setIMUdata(IMUdata data);
 	void computeCRC();
 	void clear();
 	void send();
