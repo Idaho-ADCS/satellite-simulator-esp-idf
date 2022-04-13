@@ -242,7 +242,9 @@ void basic_motion(void *pvParameters)
 			if (rot_vel_z < MAX_TEST_SPD && multiplier < 1.0)
 			{ // as long as we are spinning slower than our goal, continue
 				pwm_sig = 255 * multiplier;
-				flywhl.run(FWD, pwm_sig);
+/***********************************************************************************************************************/
+				// flywhl.run(FWD, pwm_sig);  // this line prevents the UART from receiving commands
+/***********************************************************************************************************************/
 
 				if (multiplier < 1.0)
 				{
@@ -257,8 +259,9 @@ void basic_motion(void *pvParameters)
 			}
 			else
 			{ // stop the test
-
-				flywhl.stop();
+/***********************************************************************************************************************/
+				// flywhl.stop();  // this line never executes, but it could also inhibit the UART
+/***********************************************************************************************************************/
 
 				// notify the TES by sending an empty packet with status set
 				data.setStatus(STATUS_TEST_END);
@@ -384,7 +387,10 @@ void simple_detumble(void *pvParameters)
 
 	const int target_rot_vel = 0; // rotational velocity we want to maintain
 	const int step_size = 1;	  // minimum step size to take when error is present
-	int num_steps = 0;
+/***********************************************************************************************************************/
+	// int num_steps = 0; // causes divide by zero error on first iteration
+	int num_steps = 1;
+/***********************************************************************************************************************/
 
 	const float P = 0.25; // proportional component
 	int I = 0;			  // integral component
@@ -394,6 +400,8 @@ void simple_detumble(void *pvParameters)
 	int error = 0;		// assumed stationary at start
 
 	int pwm_output = 0; // init at zero, signed to represent direction
+
+	ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
 
 	while (true)
 	{
@@ -405,9 +413,10 @@ void simple_detumble(void *pvParameters)
 		if (mode == MODE_TEST) // CMD_TST_SIMPLE_DETUMBLE)
 		{
 			// calculate error
-			ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
-			if (IMU1.dataReady())
-				IMU1.getAGMT(); // acquires data from sensor
+			if (IMU1.dataReady());
+/***********************************************************************************************************************/
+				// IMU1.getAGMT(); // breaks IMU for some reason and IMU has to be unplugged and replugged
+/***********************************************************************************************************************/
 			float rot_vel_z = sensor_ptr1->gyrZ();
 
 			error = rot_vel_z - target_rot_vel; // difference between current state and target state
@@ -430,11 +439,15 @@ void simple_detumble(void *pvParameters)
 			// unsigned pwm to motor with direction
 			if (error > 0)
 			{
-				flywhl.run(REV, pwm_output);
+/***********************************************************************************************************************/
+				// flywhl.run(REV, pwm_output);  // this line prevents the UART from receiving commands
+/***********************************************************************************************************************/
 			}
 			else if (error < 0)
 			{
-				flywhl.run(FWD, pwm_output);
+/***********************************************************************************************************************/
+				// flywhl.run(FWD, pwm_output);  // this line prevents the UART from receiving commands
+/***********************************************************************************************************************/
 			}
 			else
 			{

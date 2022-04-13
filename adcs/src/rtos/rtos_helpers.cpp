@@ -109,11 +109,10 @@ void create_test_tasks(void)
 	SERCOM_USB.write("[rtos]\t\tSuspended scheduler while tasks are created\r\n");
 #endif
 
-	// for some reason this task cannot be halted - the UART rx task cannot receive commands
-// 	xTaskCreate(basic_motion, "BASIC MOTION", 256, NULL, 1, NULL);
-// #if DEBUG
-// 	SERCOM_USB.write("[rtos]\t\tCreated basic motion task\r\n");
-// #endif
+	xTaskCreate(basic_motion, "BASIC MOTION", 256, NULL, 1, NULL);
+#if DEBUG
+	SERCOM_USB.write("[rtos]\t\tCreated basic motion task\r\n");
+#endif
 
 	xTaskCreate(basic_attitude_determination, "BASIC AD", 256, NULL, 1, NULL);
 #if DEBUG
@@ -125,11 +124,10 @@ void create_test_tasks(void)
 	SERCOM_USB.write("[rtos]\t\tCreated basic attitude control task\r\n");
 #endif
 
-	// for some reason this task cannot be halted - the UART rx task cannot receive commands
-// 	xTaskCreate(simple_detumble, "SIMPLE DETUMBLE", 256, NULL, 1, NULL);
-// #if DEBUG
-// 	SERCOM_USB.write("[rtos]\t\tCreated simple detumble task\r\n");
-// #endif
+	xTaskCreate(simple_detumble, "SIMPLE DETUMBLE", 256, NULL, 1, NULL);
+#if DEBUG
+	SERCOM_USB.write("[rtos]\t\tCreated simple detumble task\r\n");
+#endif
 
 	xTaskCreate(simple_orient, "SIMPLE ORIENT", 256, NULL, 1, NULL);
 #if DEBUG
