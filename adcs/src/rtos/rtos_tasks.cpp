@@ -413,9 +413,9 @@ void simple_detumble(void *pvParameters)
 		if (mode == MODE_TEST) // CMD_TST_SIMPLE_DETUMBLE)
 		{
 			// calculate error
-			if (IMU1.dataReady());
 /***********************************************************************************************************************/
-				// IMU1.getAGMT(); // breaks IMU for some reason and IMU has to be unplugged and replugged
+			// if (IMU1.dataReady())
+			// 	IMU1.getAGMT(); // breaks IMU for some reason and IMU has to be unplugged and replugged
 /***********************************************************************************************************************/
 			float rot_vel_z = sensor_ptr1->gyrZ();
 
