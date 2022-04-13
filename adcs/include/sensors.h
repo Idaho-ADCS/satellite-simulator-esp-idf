@@ -5,7 +5,7 @@
 #include "INA209.h"
 
 #define NUM_IMUS 1
-#define INA
+#define INA 0
 
 /* DATA TYPES =============================================================== */
 

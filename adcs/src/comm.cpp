@@ -1,3 +1,4 @@
+#include "flags.h"
 #include "comm.h"
 
 /* TEScommand METHODS ======================================================= */
@@ -23,7 +24,7 @@ void TEScommand::addByte(uint8_t b)
 	}
 }
 
-void TEScommand::copyBytes(uint8_t *bytes)
+void TEScommand::loadBytes(uint8_t *bytes)
 {
 	for (int i = 0; i < COMMAND_LEN; i++)
 	{
@@ -72,28 +73,11 @@ void ADCSdata::setStatus(uint8_t s)
 	_status = s;
 }
 
-// void ADCSdata::setINAdata(float v, float i)
-// {
-// 	_voltage = floatToFixed(v);
-// 	_current = (int8_t)i;
-// }
-
 void ADCSdata::setINAdata(INAdata data)
 {
 	_voltage = floatToFixed(data.voltage);
 	_current = (int8_t)data.current;
 }
-
-// void ADCSdata::setIMUdata(float mx, float my, float mz, float gx, float gy, float gz)
-// {
-// 	_magX = (int8_t)mx;
-// 	_magY = (int8_t)my;
-// 	_magZ = (int8_t)mz;
-
-// 	_gyroX = floatToFixed(gx);
-// 	_gyroY = floatToFixed(gy);
-// 	_gyroZ = floatToFixed(gz);
-// }
 
 void ADCSdata::setIMUdata(IMUdata data)
 {
@@ -111,6 +95,11 @@ void ADCSdata::computeCRC()
 	CRC16 crcGen;
 	crcGen.add(_data, PACKET_LEN-2);
 	_crc = crcGen.getCRC();
+}
+
+uint8_t* ADCSdata::getBytes()
+{
+	return _data;
 }
 
 void ADCSdata::clear()
@@ -150,7 +139,7 @@ void initUART(void)
     SERCOM_UART.begin(115200, SERIAL_8O1);
     while (!SERCOM_UART);  // wait for initialization to complete
 	SERCOM_UART.setTimeout(10);
-#ifdef DEBUG
+#if DEBUG
     SERCOM_USB.write("[system init]\tUART interface initialized\r\n");
 #endif
 }
@@ -163,7 +152,7 @@ void initI2C(void)
      */
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
-#ifdef DEBUG
+#if DEBUG
 	SERCOM_USB.write("[system init]\tI2C interface initialized\r\n");
 #endif
 }

@@ -7,29 +7,46 @@
 #include <stdint.h>
 
 // create more descriptive names for serial interfaces
-#define SERCOM_USB  Serial
+#define SERCOM_USB Serial
 #define SERCOM_UART Serial1
-#define SERCOM_I2C  Wire
-#define AD0_VAL     0
+#define SERCOM_I2C Wire
+#define AD0_VAL 1
 
 // packet sizes in bytes
 #define COMMAND_LEN 4
-#define PACKET_LEN  13
+#define PACKET_LEN 14
 
 // command values
 enum Command : uint8_t
 {
+	CMD_DESATURATE = 0x00, // bring everything to a stop, maybe turn off?
 	CMD_STANDBY = 0xc0,
-	CMD_TEST    = 0xa0
+	CMD_HEARTBEAT = 0xa0, // transmit heartbeat signal regularly
+
+	CMD_TST_BASIC_MOTION = 0xa1,	// test how much force needed to rotate
+	CMD_TST_BASIC_AD = 0xa2,		// test attitude determination
+	CMD_TST_BASIC_AC = 0xa3,		// test attitude control
+	CMD_TST_SIMPLE_DETUMBLE = 0xa4, // test simplistic detumble
+	CMD_TST_SIMPLE_ORIENT = 0xa5,	// test simplistic orientation
+
+	CMD_ORIENT_DEFAULT = 0x80, // should be orienting to something like X+
+	CMD_ORIENT_X_POS = 0xe0,
+	CMD_ORIENT_Y_POS = 0xe1,
+	CMD_ORIENT_X_NEG = 0xe2,
+	CMD_ORIENT_Y_NEG = 0xe3
 };
 
 // data packet status codes
 enum Status : uint8_t
 {
-	STATUS_OK         = 0xaa,  // "Heartbeat"
-	STATUS_HELLO      = 0xaf,  // Sent upon system init
-	STATUS_ADCS_ERROR = 0xf0,  // Sent upon runtime error
-	STATUS_COMM_ERROR = 0x99   // Sent upon invalid communication
+	STATUS_OK = 0xaa,		  // "Heartbeat"
+	STATUS_HELLO = 0xaf,	  // Sent upon system init
+	STATUS_ADCS_ERROR = 0xf0, // Sent upon runtime error
+	STATUS_COMM_ERROR = 0x99, // Sent upon invalid communication
+	STATUS_FUDGED = 0x00,	  // Data is not real, just test output
+
+	STATUS_TEST_START = 0xb0, // starting test
+	STATUS_TEST_END = 0xb1,	  // test finished
 };
 
 /**
@@ -70,19 +87,19 @@ private:
 
 public:
 	/**
-	 * 
+	 *
 	 */
 	TEScommand();
 
 	/**
-	 * 
+	 *
 	 */
-	void    addByte(uint8_t b);
-	void    copyBytes(uint8_t *bytes);
-	bool    isFull();
+	void addByte(uint8_t b);
+	void loadBytes(uint8_t *bytes);
+	bool isFull();
 	uint8_t getCommand();
-	bool    checkCRC();
-	void    clear();
+	bool checkCRC();
+	void clear();
 };
 
 class ADCSdata
@@ -96,29 +113,28 @@ private:
 		struct
 		{
 			// Data can be accessed as fields - used to build packet
-			uint8_t    _status;
+			uint16_t _status;
 			fixed5_3_t _voltage;
-			int16_t    _current;
-			uint8_t    _speed;
-			int8_t     _magX;
-			int8_t	   _magY;
-			int8_t	   _magZ;
+			int16_t _current;
+			uint8_t _speed;
+			int8_t _magX;
+			int8_t _magY;
+			int8_t _magZ;
 			fixed5_3_t _gyroX;
 			fixed5_3_t _gyroY;
 			fixed5_3_t _gyroZ;
-			uint16_t   _crc;
+			uint16_t _crc;
 		};
 	};
 
 public:
 	ADCSdata();
 	void setStatus(uint8_t s);
-	// void setINAdata(float v, float i);
 	void setINAdata(INAdata data);
 	void setSpeed(float s);
-	// void setIMUdata(float mx, float my, float mz, float gx, float gy, float gz);
 	void setIMUdata(IMUdata data);
 	void computeCRC();
+	uint8_t *getBytes();
 	void clear();
 	void send();
 };

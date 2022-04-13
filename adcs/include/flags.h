@@ -1,6 +1,6 @@
 #ifndef __FLAGS_H__
 #define __FLAGS_H__
 
-#define DEBUG
+#define DEBUG 1
 
 #endif

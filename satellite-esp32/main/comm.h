@@ -2,7 +2,7 @@
 
 // packet sizes in bytes
 #define COMMAND_LEN 4
-#define PACKET_LEN  13
+#define PACKET_LEN  14
 
 // command values
 enum Command
@@ -59,7 +59,7 @@ typedef struct
 		struct
 		{
 			// Data can be accessed as fields - used to build packet
-			uint8_t    _status;
+			uint16_t   _status;
 			fixed5_3_t _voltage;
 			int16_t    _current;
 			uint8_t    _speed;

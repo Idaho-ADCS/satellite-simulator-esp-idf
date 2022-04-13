@@ -8,7 +8,8 @@
 
 // descriptive names for mode values
 #define MODE_STANDBY 0
-#define MODE_TEST 1
+#define MODE_HEARTBEAT 1
+#define MODE_TEST 2
 
 // #define TWO_IMUS
 
