@@ -242,9 +242,7 @@ void basic_motion(void *pvParameters)
 			if (rot_vel_z < MAX_TEST_SPD && multiplier < 1.0)
 			{ // as long as we are spinning slower than our goal, continue
 				pwm_sig = 255 * multiplier;
-/***********************************************************************************************************************/
-				// flywhl.run(FWD, pwm_sig);  // this line prevents the UART from receiving commands
-/***********************************************************************************************************************/
+				flywhl.run(FWD, pwm_sig);
 
 				if (multiplier < 1.0)
 				{
@@ -259,9 +257,7 @@ void basic_motion(void *pvParameters)
 			}
 			else
 			{ // stop the test
-/***********************************************************************************************************************/
-				// flywhl.stop();  // this line never executes, but it could also inhibit the UART
-/***********************************************************************************************************************/
+				flywhl.stop();
 
 				// notify the TES by sending an empty packet with status set
 				data.setStatus(STATUS_TEST_END);
@@ -439,15 +435,11 @@ void simple_detumble(void *pvParameters)
 			// unsigned pwm to motor with direction
 			if (error > 0)
 			{
-/***********************************************************************************************************************/
-				// flywhl.run(REV, pwm_output);  // this line prevents the UART from receiving commands
-/***********************************************************************************************************************/
+				flywhl.run(REV, pwm_output);
 			}
 			else if (error < 0)
 			{
-/***********************************************************************************************************************/
-				// flywhl.run(FWD, pwm_output);  // this line prevents the UART from receiving commands
-/***********************************************************************************************************************/
+				flywhl.run(FWD, pwm_output);
 			}
 			else
 			{
