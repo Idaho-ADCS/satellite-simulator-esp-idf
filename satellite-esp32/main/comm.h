@@ -7,8 +7,19 @@
 // command values
 enum Command
 {
-	CMD_STANDBY = 0xc0,
-	CMD_TEST    = 0xa0
+	CMD_DESATURATE  = 0x00,     // bring everything to a stop, maybe turn off?
+	CMD_STANDBY     = 0xc0,
+	CMD_HEARTBEAT   = 0xa0,     // transmit heartbeat signal regularly
+	CMD_TST_BASIC_MOTION = 0xa1, // test how much force needed to rotate
+	CMD_TST_BASIC_AD = 0xa2,    // test attitude determination
+	CMD_TST_BASIC_AC = 0xa3,    // test attitude control
+	CMD_TST_SIMPLE_DETUMBLE = 0xa4, // test simplistic detumble 
+	CMD_TST_SIMPLE_ORIENT   = 0xa5, // test simplistic orientation
+	CMD_ORIENT_DEFAULT = 0x80,  // should be orienting to something like X+
+	CMD_ORIENT_X_POS= 0xe0,
+	CMD_ORIENT_Y_POS= 0xe1,
+	CMD_ORIENT_X_NEG= 0xe2,
+	CMD_ORIENT_Y_NEG= 0xe3
 };
 
 // data packet status codes
@@ -17,7 +28,10 @@ enum Status
 	STATUS_OK         = 0xaa,  // "Heartbeat"
 	STATUS_HELLO      = 0xaf,  // Sent upon system init
 	STATUS_ADCS_ERROR = 0xf0,  // Sent upon runtime error
-	STATUS_COMM_ERROR = 0x99   // Sent upon invalid communication
+	STATUS_COMM_ERROR = 0x99,  // Sent upon invalid communication
+	STATUS_FUDGED     = 0x00,  // Data is not real, just test output
+	STATUS_TEST_START = 0xb0,  // starting test
+	STATUS_TEST_END   = 0xb1  // test finished
 };
 
 typedef int8_t fixed5_3_t;

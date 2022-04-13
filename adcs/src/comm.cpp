@@ -23,6 +23,14 @@ void TEScommand::addByte(uint8_t b)
 	}
 }
 
+void TEScommand::copyBytes(uint8_t *bytes)
+{
+	for (int i = 0; i < COMMAND_LEN; i++)
+	{
+		_data[i] = bytes[i];
+	}
+}
+
 bool TEScommand::isFull()
 {
 	return _full;
@@ -37,14 +45,6 @@ bool TEScommand::checkCRC()
 {
 	CRC16 crcGen;
 	crcGen.add(_data, COMMAND_LEN-2);
-
-#if 0
-	char crc_str[8];
-	sprintf(crc_str, "0x%02x", crcGen.getCRC());
-	SERCOM_USB.write("TES CRC: ");
-	SERCOM_USB.write(crc_str);
-	SERCOM_USB.write("\r\n");
-#endif
 
 	if (crcGen.getCRC() == _crc)
 		return true;
@@ -111,14 +111,6 @@ void ADCSdata::computeCRC()
 	CRC16 crcGen;
 	crcGen.add(_data, PACKET_LEN-2);
 	_crc = crcGen.getCRC();
-
-#if 0
-	char crc_str[8];
-	sprintf(crc_str, "0x%02x", crcGen.getCRC());
-	SERCOM_USB.write("CRC: ");
-	SERCOM_USB.write(crc_str);
-	SERCOM_USB.write("\r\n");
-#endif
 }
 
 void ADCSdata::clear()
@@ -144,7 +136,7 @@ void initUSB(void)
      */
     SERCOM_USB.begin(115200);
     while (!SERCOM_USB);  // wait for initialization to complete
-    SERCOM_USB.write("USB interface initialized\r\n");
+    SERCOM_USB.write("[system init]\tUSB interface initialized\r\n");
 }
 
 void initUART(void)
@@ -157,8 +149,9 @@ void initUART(void)
      */
     SERCOM_UART.begin(115200, SERIAL_8O1);
     while (!SERCOM_UART);  // wait for initialization to complete
+	SERCOM_UART.setTimeout(10);
 #ifdef DEBUG
-    SERCOM_USB.write("UART interface initialized\r\n");
+    SERCOM_USB.write("[system init]\tUART interface initialized\r\n");
 #endif
 }
 
@@ -170,6 +163,9 @@ void initI2C(void)
      */
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
+#ifdef DEBUG
+	SERCOM_USB.write("[system init]\tI2C interface initialized\r\n");
+#endif
 }
 
 /* HELPER FUNCTIONS ========================================================= */

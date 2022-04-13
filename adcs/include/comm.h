@@ -78,6 +78,7 @@ public:
 	 * 
 	 */
 	void    addByte(uint8_t b);
+	void    copyBytes(uint8_t *bytes);
 	bool    isFull();
 	uint8_t getCommand();
 	bool    checkCRC();

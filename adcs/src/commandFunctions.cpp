@@ -50,7 +50,7 @@ void orient(const char *direction)
 
 
 	//For now, check that satelite is currently stablized. If not, stablize then rotate.
-	//Copied from main.cpp/writeUART(): Get current rotation/speed of rotation
+	//Copied from main.cpp/transmitData(): Get current rotation/speed of rotation
 	//To test if there is rotation, it will test the difference between 2 data points taken ~1 sec apart.
 	if (IMU1.dataReady())
 	{

@@ -190,8 +190,13 @@ static esp_err_t adcs_mode_post_handler(httpd_req_t *req)
 		break;
 
 		case 1:
-		send_command(CMD_TEST);
+		send_command(CMD_HEARTBEAT);
 		httpd_resp_sendstr(req, "Set ADCS mode to measure");
+		break;
+
+		case 2:
+		send_command(CMD_TST_SIMPLE_DETUMBLE);
+		httpd_resp_sendstr(req, "Initiating detumble test");
 		break;
 
 		default:
@@ -237,6 +242,8 @@ static esp_err_t adcs_data_get_handler(httpd_req_t *req)
 			cJSON_AddStringToObject(obj, "status", "COMM ERROR");
 		if (packet_copy._status == STATUS_ADCS_ERROR)
 			cJSON_AddStringToObject(obj, "status", "SYSTEM ERROR");
+		if (packet_copy._status == STATUS_FUDGED)
+			cJSON_AddStringToObject(obj, "status", "FUDGED");
 
 		cJSON_AddNumberToObject(obj, "voltage", fixedToFloat(packet_copy._voltage));
 		cJSON_AddNumberToObject(obj, "current", packet_copy._current);

@@ -14,7 +14,7 @@
           v-model="mode"
           color="yellow accent-4"
           :items="modes"
-          label="Mode"
+          label="Command"
           :disabled="!enable"
           @change="set_mode"
         ></v-select>
@@ -58,7 +58,7 @@ export default {
       timer: null,
       enable: false,
       mode: "Standby",
-      modes: ["Standby", "Measure"],
+      modes: ["Standby", "Measure", "Simple Detumble Test"],
 
       headers: [
         {
@@ -152,6 +152,10 @@ export default {
         clearInterval(this.timer);
         this.timer = setInterval(this.updateData, 550);
       }
+	  if (this.mode === "Simple Detumble Test") {
+		modeInt = 2;
+		clearInterval(this.timer);
+	  }
 
       this.$ajax
         .post("/api/adcs/mode", {

@@ -32,7 +32,7 @@ QueueHandle_t modeQ;
 /* RTOS TASK DECLARATIONS =================================================== */
 
 static void receiveCommand(void *pvParameters);
-static void writeUART(void *pvParameters);
+static void transmitData(void *pvParameters);
 
 /* "MAIN" =================================================================== */
 
@@ -83,7 +83,7 @@ void setup()
 
     // instantiate tasks and start scheduler
     xTaskCreate(receiveCommand, "Read UART", 2048, NULL, 1, NULL);
-    xTaskCreate(writeUART, "Write UART", 2048, NULL, 1, NULL);
+    xTaskCreate(transmitData, "Write UART", 2048, NULL, 1, NULL);
 
 #ifdef DEBUG
     SERCOM_USB.write("Tasks created\r\n");
@@ -123,32 +123,50 @@ static void receiveCommand(void *pvParameters)
 	ADCSdata response;
 	uint8_t mode;
 
+	int rx_len;
+	int rx_bytes;
+	uint8_t rx_buf[COMMAND_LEN];
+
 #ifdef DEBUG
-    char cmd_str[8];  // used to print command value to serial monitor
+    char debug_str[8];  // used to print command value to serial monitor
 #endif
 
     while (1)
     {
-        if (SERCOM_UART.available())  // at least one byte is in the UART
-        {							  // receive buffer
+		rx_len = SERCOM_UART.available();
 
-            // copy one byte out of UART receive buffer
-			cmd_packet.addByte((uint8_t)SERCOM_UART.read());
-
-			if (cmd_packet.isFull())  // full command packet received
-            {
+        if (rx_len > 0)  // at least one byte is in the UART
+        {				 // receive buffer
 #ifdef DEBUG
-                // convert int to string for USB monitoring
-                sprintf(cmd_str, "0x%02x", cmd_packet.getCommand());
-
-                // print command value to USB
-                SERCOM_USB.print("Command received: ");
-                SERCOM_USB.print(cmd_str);
-                SERCOM_USB.print("\r\n");
+			sprintf(debug_str, "%d", rx_len);
+			SERCOM_USB.write("[command rx]\tDetected ");
+			SERCOM_USB.write(debug_str);
+			SERCOM_USB.write(" bytes in UART rx buffer\r\n");
 #endif
 
-				// if (cmd_packet.checkCRC())
-				// {
+			rx_bytes = SERCOM_UART.readBytes(rx_buf, COMMAND_LEN);
+
+#ifdef DEBUG
+			sprintf(debug_str, "%d", rx_bytes);
+			SERCOM_USB.write("[command rx]\tReceived ");
+			SERCOM_USB.write(debug_str);
+			SERCOM_USB.write(" bytes:");
+
+			for (int i = 0; i < rx_bytes; i++)
+			{
+				sprintf(debug_str, " %02x", rx_buf[i]);
+				SERCOM_USB.write(debug_str);
+			}
+
+			SERCOM_USB.write("\r\n");
+#endif
+
+			if (rx_bytes == COMMAND_LEN)  // full command packet received
+            {
+				cmd_packet.copyBytes(rx_buf);
+
+				if (cmd_packet.checkCRC())
+				{
 					// process command if CRC is valid
 					if (cmd_packet.getCommand() == CMD_TEST)
 					{
@@ -165,23 +183,23 @@ static void receiveCommand(void *pvParameters)
 						SERCOM_USB.write("Entering standby mode\n");
 #endif
 					}
-// 				}
-// 				else
-//                 {
-// 					// send error message if CRC is not valid
-// 					response.setStatus(STATUS_COMM_ERROR);
-// 					response.computeCRC();
-// 					response.send();
-// #ifdef DEBUG
-// 					SERCOM_USB.write("CRC check failed\n");
-// #endif
-// 				}
+				}
+				else
+                {
+					// send error message if CRC is not valid
+					response.setStatus(STATUS_COMM_ERROR);
+					response.computeCRC();
+					response.send();
+#ifdef DEBUG
+					SERCOM_USB.write("[command rx]\tCRC check failed - transmitting error message\r\n");
+#endif
+				}
 
 				xQueueOverwrite(modeQ, (void*)&mode);  // enter specified mode
             }
         }
 
-		// vTaskDelay(1000 / portTICK_PERIOD_MS);
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -197,16 +215,12 @@ static void receiveCommand(void *pvParameters)
  * 
  * @return None
  */
-static void writeUART(void *pvParameters)
+static void transmitData(void *pvParameters)
 {
 	uint8_t mode;
 	ADCSdata data_packet;
 	INAdata ina;
 	IMUdata imu;
-
-#ifdef DEBUG
-	char mode_str[8];
-#endif
 
     while (1)
     {
@@ -253,4 +267,19 @@ static void writeUART(void *pvParameters)
 void loop()
 {
     // do nothing
+}
+
+void _general_exception_handler( unsigned long ulCause, unsigned long ulStatus )
+{
+	/* This overrides the definition provided by the kernel.  Other exceptions 
+	should be handled here. */
+    
+    ADCSdata error_msg;
+	error_msg.setStatus(STATUS_ADCS_ERROR);
+
+	while (1)
+	{
+		error_msg.send();
+		vNopDelayMS(5000);
+	}
 }
