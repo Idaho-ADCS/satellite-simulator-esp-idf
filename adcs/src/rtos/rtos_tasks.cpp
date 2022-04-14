@@ -39,7 +39,7 @@ void receiveCommand(void *pvParameters)
 
 #if DEBUG
 	char debug_str[8]; // used to print command value to serial monitor
-	SERCOM_USB.write("[command rx]\tTask started\r\n");
+	SERCOM_USB.print("[command rx]\tTask started\r\n");
 #endif
 
 	while (1)
@@ -50,26 +50,26 @@ void receiveCommand(void *pvParameters)
 		{				// receive buffer
 #if DEBUG
 			sprintf(debug_str, "%d", rx_len);
-			SERCOM_USB.write("[command rx]\tDetected ");
-			SERCOM_USB.write(debug_str);
-			SERCOM_USB.write(" bytes in UART rx buffer\r\n");
+			SERCOM_USB.print("[command rx]\tDetected ");
+			SERCOM_USB.print(debug_str);
+			SERCOM_USB.print(" bytes in UART rx buffer\r\n");
 #endif
 
 			rx_bytes = SERCOM_UART.readBytes(rx_buf, COMMAND_LEN);
 
 #if DEBUG
 			sprintf(debug_str, "%d", rx_bytes);
-			SERCOM_USB.write("[command rx]\tReceived ");
-			SERCOM_USB.write(debug_str);
-			SERCOM_USB.write(" bytes:  [");
+			SERCOM_USB.print("[command rx]\tReceived ");
+			SERCOM_USB.print(debug_str);
+			SERCOM_USB.print(" bytes:  [");
 
 			for (int i = 0; i < rx_bytes; i++)
 			{
 				sprintf(debug_str, " %02x", rx_buf[i]);
-				SERCOM_USB.write(debug_str);
+				SERCOM_USB.print(debug_str);
 			}
 
-			SERCOM_USB.write(" ]\r\n");
+			SERCOM_USB.print(" ]\r\n");
 #endif
 
 			if (rx_bytes == COMMAND_LEN) // full command packet received
@@ -87,7 +87,7 @@ void receiveCommand(void *pvParameters)
 				// 					response.computeCRC();
 				// 					response.send();
 				// #if DEBUG
-				// 					SERCOM_USB.write("[command rx]\tCRC check failed - transmitting error message\r\n");
+				// 					SERCOM_USB.print("[command rx]\tCRC check failed - transmitting error message\r\n");
 				// #endif
 				// 				}
 			}
@@ -98,7 +98,7 @@ void receiveCommand(void *pvParameters)
 				response.computeCRC();
 				response.send();
 #if DEBUG
-				SERCOM_USB.write("[command rx]\tReceived incorrect number of bytes - transmitting error message\r\n");
+				SERCOM_USB.print("[command rx]\tReceived incorrect number of bytes - transmitting error message\r\n");
 #endif
 			}
 		}
@@ -130,7 +130,7 @@ void heartbeat(void *pvParameters)
 
 #if DEBUG
 	char debug_str[16];
-	SERCOM_USB.write("[heartbeat]\tTask started\r\n");
+	SERCOM_USB.print("[heartbeat]\tTask started\r\n");
 #endif
 
 	while (1)
@@ -157,17 +157,17 @@ void heartbeat(void *pvParameters)
 #if DEBUG
 			tx_buf = data_packet.getBytes();
 			sprintf(debug_str, "%d", PACKET_LEN);
-			SERCOM_USB.write("[heartbeat]\tTransmitted ");
-			SERCOM_USB.write(debug_str);
-			SERCOM_USB.write(" bytes:  [");
+			SERCOM_USB.print("[heartbeat]\tTransmitted ");
+			SERCOM_USB.print(debug_str);
+			SERCOM_USB.print(" bytes:  [");
 
 			for (int i = 0; i < PACKET_LEN; i++)
 			{
 				sprintf(debug_str, " %02x", tx_buf[i]);
-				SERCOM_USB.write(debug_str);
+				SERCOM_USB.print(debug_str);
 			}
 
-			SERCOM_USB.write(" ]\r\n");
+			SERCOM_USB.print(" ]\r\n");
 #endif
 
 			data_packet.clear();
@@ -187,7 +187,7 @@ void basic_motion(void *pvParameters)
 {
 #if DEBUG
 	char debug_str[16];
-	SERCOM_USB.write("[basic motion]\tTask started\r\n");
+	SERCOM_USB.print("[basic motion]\tTask started\r\n");
 #endif
 
 	uint8_t *tx_buf;
@@ -208,7 +208,7 @@ void basic_motion(void *pvParameters)
 	while (true)
 	{
 // #if DEBUG
-// 		SERCOM_USB.write("[basic motion]\tChecked mode\r\n");
+// 		SERCOM_USB.print("[basic motion]\tChecked mode\r\n");
 // #endif
 
 		xQueuePeek(modeQ, (void *)&mode, (TickType_t)0);
@@ -221,17 +221,17 @@ void basic_motion(void *pvParameters)
 #if DEBUG
 				tx_buf = data.getBytes();
 				sprintf(debug_str, "%d", PACKET_LEN);
-				SERCOM_USB.write("[basic motion]\tTransmitted ");
-				SERCOM_USB.write(debug_str);
-				SERCOM_USB.write(" bytes:  [");
+				SERCOM_USB.print("[basic motion]\tTransmitted ");
+				SERCOM_USB.print(debug_str);
+				SERCOM_USB.print(" bytes:  [");
 
 				for (int i = 0; i < PACKET_LEN; i++)
 				{
 					sprintf(debug_str, " %02x", tx_buf[i]);
-					SERCOM_USB.write(debug_str);
+					SERCOM_USB.print(debug_str);
 				}
 
-				SERCOM_USB.write(" ]\r\n");
+				SERCOM_USB.print(" ]\r\n");
 #endif
 			}
 
@@ -250,7 +250,7 @@ void basic_motion(void *pvParameters)
 #if DEBUG
 				else
 				{
-					SERCOM_USB.write("[basic motion]\tMultiplier hit ceiling\r\n");
+					SERCOM_USB.print("[basic motion]\tMultiplier hit ceiling\r\n");
 				}
 #endif
 			}
@@ -265,31 +265,31 @@ void basic_motion(void *pvParameters)
 #if DEBUG
 				tx_buf = data.getBytes();
 				sprintf(debug_str, "%d", PACKET_LEN);
-				SERCOM_USB.write("[basic motion]\tTransmitted ");
-				SERCOM_USB.write(debug_str);
-				SERCOM_USB.write(" bytes:  [");
+				SERCOM_USB.print("[basic motion]\tTransmitted ");
+				SERCOM_USB.print(debug_str);
+				SERCOM_USB.print(" bytes:  [");
 
 				for (int i = 0; i < PACKET_LEN; i++)
 				{
 					sprintf(debug_str, " %02x", tx_buf[i]);
-					SERCOM_USB.write(debug_str);
+					SERCOM_USB.print(debug_str);
 				}
 
-				SERCOM_USB.write(" ]\r\n");
+				SERCOM_USB.print(" ]\r\n");
 #endif
 
 #if DEBUG
 				if (rot_vel_z > MAX_TEST_SPD)
 				{
-					SERCOM_USB.write("[basic motion]\tRotational velocity greater than MAX_TEST_SPD ( ");
-					SERCOM_USB.write(MAX_TEST_SPD);
-					SERCOM_USB.write(" deg/s )\r\n");
+					SERCOM_USB.print("[basic motion]\tRotational velocity greater than MAX_TEST_SPD ( ");
+					SERCOM_USB.print(MAX_TEST_SPD);
+					SERCOM_USB.print(" deg/s )\r\n");
 				}
 				else if (multiplier >= 1)
 				{
-					SERCOM_USB.write("[basic motion]\tMultiplier hit ceiling but velocity still ");
-					SERCOM_USB.write(rot_vel_z);
-					SERCOM_USB.write(" deg/s\r\n");
+					SERCOM_USB.print("[basic motion]\tMultiplier hit ceiling but velocity still ");
+					SERCOM_USB.print(rot_vel_z);
+					SERCOM_USB.print(" deg/s\r\n");
 				}
 #endif
 
@@ -314,13 +314,13 @@ void basic_attitude_determination(void *pvParameters)
 
 #if DEBUG
 	char debug_str[16];
-	SERCOM_USB.write("[basic AD]\tTask started\r\n");
+	SERCOM_USB.print("[basic AD]\tTask started\r\n");
 #endif
 
 	while (true)
 	{
 // #if DEBUG
-// 		SERCOM_USB.write("[basic AD]\tChecked mode\r\n");
+// 		SERCOM_USB.print("[basic AD]\tChecked mode\r\n");
 // #endif
 		xQueuePeek(modeQ, &mode, 0);
 
@@ -346,13 +346,13 @@ void basic_attitude_control(void *pvParameters)
 
 #if DEBUG
 	char debug_str[16];
-	SERCOM_USB.write("[basic AC]\tTask started\r\n");
+	SERCOM_USB.print("[basic AC]\tTask started\r\n");
 #endif
 
 	while (true)
 	{
 // #if DEBUG
-// 		SERCOM_USB.write("[basic AC]\tChecked mode\r\n");
+// 		SERCOM_USB.print("[basic AC]\tChecked mode\r\n");
 // #endif
 		xQueuePeek(modeQ, &mode, 0);
 
@@ -375,7 +375,7 @@ void simple_detumble(void *pvParameters)
 {
 #if DEBUG
 	char debug_str[16];
-	SERCOM_USB.write("[basic detumbl]\tTask started\r\n");
+	SERCOM_USB.print("[basic detumbl]\tTask started\r\n");
 #endif
 
 	uint8_t mode; // last received ADCS mode
@@ -401,7 +401,7 @@ void simple_detumble(void *pvParameters)
 	while (true)
 	{
 // #if DEBUG
-// 		SERCOM_USB.write("[basic detumbl]\tChecked mode\r\n");
+// 		SERCOM_USB.print("[basic detumbl]\tChecked mode\r\n");
 // #endif
 		xQueuePeek(modeQ, &mode, 0);
 
@@ -444,18 +444,18 @@ void simple_detumble(void *pvParameters)
 			}
 
 #if DEBUG
-				SERCOM_USB.write("====== PID LOOP ======\r\n");
-				SERCOM_USB.write("IMU VELOCITY = ");
+				SERCOM_USB.print("[basic detumbl]\t====== PID LOOP ======\r\n");
+				SERCOM_USB.print("\t\tIMU VELOCITY = ");
 				SERCOM_USB.print(rot_vel_z);
-				SERCOM_USB.write(" degrees/sec\r\n");
+				SERCOM_USB.print(" degrees/sec\r\n");
 
-				SERCOM_USB.write("ERROR = ");
+				SERCOM_USB.print("\t\tERROR = ");
 				SERCOM_USB.print(error);
-				SERCOM_USB.write("\r\n");
+				SERCOM_USB.print("\r\n");
 
-				SERCOM_USB.write("PWM OUTPUT = ");
+				SERCOM_USB.print("\t\tPWM OUTPUT = ");
 				SERCOM_USB.print(pwm_output);
-				SERCOM_USB.write("\r\n======================\r\n");
+				SERCOM_USB.print("\r\n\t\t======================\r\n");
 #endif
 
 			prev_error = error;
@@ -475,13 +475,13 @@ void simple_orient(void *pvParameters)
 
 #if DEBUG
 	char debug_str[16];
-	SERCOM_USB.write("[simple orient]\tTask started\r\n");
+	SERCOM_USB.print("[simple orient]\tTask started\r\n");
 #endif
 
 	while (true)
 	{
 // #if DEBUG
-// 		SERCOM_USB.write("[simple orient]\tChecked mode\r\n");
+// 		SERCOM_USB.print("[simple orient]\tChecked mode\r\n");
 // #endif
 
 		xQueuePeek(modeQ, &mode, 0);

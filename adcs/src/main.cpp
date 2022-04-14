@@ -90,16 +90,16 @@ void setup()
 	// instantiate tasks and start scheduler
 	xTaskCreate(receiveCommand, "Read UART", 256, NULL, 2, NULL);
 #if DEBUG
-	SERCOM_USB.write("[rtos]\t\tTask receiveCommand created\r\n");
+	SERCOM_USB.print("[rtos]\t\tTask receiveCommand created\r\n");
 #endif
 
 	xTaskCreate(heartbeat, "Write UART", 256, NULL, 1, NULL);
 #if DEBUG
-	SERCOM_USB.write("[rtos]\t\tTask heartbeat created\r\n");
+	SERCOM_USB.print("[rtos]\t\tTask heartbeat created\r\n");
 #endif
 
 #if DEBUG
-	SERCOM_USB.write("[rtos]\t\tStarting task scheduler\r\n");
+	SERCOM_USB.print("[rtos]\t\tStarting task scheduler\r\n");
 #endif
 
 	vTaskStartScheduler();

@@ -125,7 +125,7 @@ void initUSB(void)
      */
     SERCOM_USB.begin(115200);
     while (!SERCOM_USB);  // wait for initialization to complete
-    SERCOM_USB.write("[system init]\tUSB interface initialized\r\n");
+    SERCOM_USB.print("[system init]\tUSB interface initialized\r\n");
 }
 
 void initUART(void)
@@ -140,7 +140,7 @@ void initUART(void)
     while (!SERCOM_UART);  // wait for initialization to complete
 	SERCOM_UART.setTimeout(10);
 #if DEBUG
-    SERCOM_USB.write("[system init]\tUART interface initialized\r\n");
+    SERCOM_USB.print("[system init]\tUART interface initialized\r\n");
 #endif
 }
 
@@ -153,7 +153,7 @@ void initI2C(void)
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
 #if DEBUG
-	SERCOM_USB.write("[system init]\tI2C interface initialized\r\n");
+	SERCOM_USB.print("[system init]\tI2C interface initialized\r\n");
 #endif
 }
 

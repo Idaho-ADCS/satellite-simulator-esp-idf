@@ -19,7 +19,7 @@ void initIMU(void)
     while (IMU1.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                                // complete
 #if DEBUG
-    SERCOM_USB.write("[system init]\tIMU1 initialized\r\n");
+    SERCOM_USB.print("[system init]\tIMU1 initialized\r\n");
 #endif
 
 #if NUM_IMUS >= 2
@@ -32,7 +32,7 @@ void initIMU(void)
     while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                                // complete
 	#if DEBUG
-    SERCOM_USB.write("[system init]\tIMU2 initialized\r\n");
+    SERCOM_USB.print("[system init]\tIMU2 initialized\r\n");
 	#endif
 #endif
 }
@@ -61,7 +61,7 @@ void initINA(void)
     ina209.writeCal(0x7fff);
     
 #if DEBUG
-    SERCOM_USB.write("[system init]\tINA209 initialized\r\n");
+    SERCOM_USB.print("[system init]\tINA209 initialized\r\n");
 #endif
 }
 
