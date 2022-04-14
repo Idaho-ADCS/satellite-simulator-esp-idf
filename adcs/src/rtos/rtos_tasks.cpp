@@ -137,7 +137,7 @@ void heartbeat(void *pvParameters)
 	{
 		xQueuePeek(modeQ, (void *)&mode, (TickType_t)0);
 
-		if (mode == MODE_HEARTBEAT)
+		if (mode == CMD_HEARTBEAT)
 		{
 			data_packet.setStatus(STATUS_OK);
 
@@ -198,7 +198,7 @@ void basic_motion(void *pvParameters)
 
 	const TickType_t FREQ = 2000 / portTICK_PERIOD_MS;
 
-	ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
+	IMUdata imu;
 
 	// notify the TES by sending an empty packet with status set
 	ADCSdata data;
@@ -213,7 +213,7 @@ void basic_motion(void *pvParameters)
 
 		xQueuePeek(modeQ, (void *)&mode, (TickType_t)0);
 
-		if (mode == MODE_TEST) // CMD_TST_BASIC_MOTION)
+		if (mode == CMD_TST_BASIC_MOTION)
 		{
 			if (multiplier == 0.0)
 			{
@@ -235,9 +235,8 @@ void basic_motion(void *pvParameters)
 #endif
 			}
 
-			if (IMU1.dataReady())
-				IMU1.getAGMT(); // acquires data from sensor
-			float rot_vel_z = sensor_ptr1->gyrZ();
+			imu = readIMU();
+			float rot_vel_z = imu.gyrZ;
 
 			if (rot_vel_z < MAX_TEST_SPD && multiplier < 1.0)
 			{ // as long as we are spinning slower than our goal, continue
@@ -325,7 +324,7 @@ void basic_attitude_determination(void *pvParameters)
 // #endif
 		xQueuePeek(modeQ, &mode, 0);
 
-		if (mode == MODE_TEST) // CMD_TST_BASIC_AD)
+		if (mode == CMD_TST_BASIC_AD)
 		{
 			// TODO: write the attitude determination test in validation_tests.cpp
 			// TODO: read IMU
@@ -357,7 +356,7 @@ void basic_attitude_control(void *pvParameters)
 // #endif
 		xQueuePeek(modeQ, &mode, 0);
 
-		if (mode == MODE_TEST) // CMD_TST_BASIC_AC)
+		if (mode == CMD_TST_BASIC_AC)
 		{
 			// TODO: write the attitude control test in validation_tests.cpp
 		}
@@ -397,7 +396,7 @@ void simple_detumble(void *pvParameters)
 
 	int pwm_output = 0; // init at zero, signed to represent direction
 
-	ICM_20948_I2C *sensor_ptr1 = &IMU1; // IMU data can only be accessed through
+	IMUdata imu;
 
 	while (true)
 	{
@@ -406,14 +405,11 @@ void simple_detumble(void *pvParameters)
 // #endif
 		xQueuePeek(modeQ, &mode, 0);
 
-		if (mode == MODE_TEST) // CMD_TST_SIMPLE_DETUMBLE)
+		if (mode == CMD_TST_SIMPLE_DETUMBLE)
 		{
 			// calculate error
-/***********************************************************************************************************************/
-			// if (IMU1.dataReady())
-			// 	IMU1.getAGMT(); // breaks IMU for some reason and IMU has to be unplugged and replugged
-/***********************************************************************************************************************/
-			float rot_vel_z = sensor_ptr1->gyrZ();
+			imu = readIMU();
+			float rot_vel_z = imu.gyrZ;
 
 			error = rot_vel_z - target_rot_vel; // difference between current state and target state
 			// proportional term calculation
@@ -450,15 +446,15 @@ void simple_detumble(void *pvParameters)
 #if DEBUG
 				SERCOM_USB.write("====== PID LOOP ======\r\n");
 				SERCOM_USB.write("IMU VELOCITY = ");
-				SERCOM_USB.write(rot_vel_z);
+				SERCOM_USB.print(rot_vel_z);
 				SERCOM_USB.write(" degrees/sec\r\n");
 
 				SERCOM_USB.write("ERROR = ");
-				SERCOM_USB.write(error);
+				SERCOM_USB.print(error);
 				SERCOM_USB.write("\r\n");
 
 				SERCOM_USB.write("PWM OUTPUT = ");
-				SERCOM_USB.write(pwm_output);
+				SERCOM_USB.print(pwm_output);
 				SERCOM_USB.write("\r\n======================\r\n");
 #endif
 
@@ -490,7 +486,7 @@ void simple_orient(void *pvParameters)
 
 		xQueuePeek(modeQ, &mode, 0);
 
-		if (mode == MODE_TEST) // CMD_TST_SIMPLE_ORIENT)
+		if (mode == CMD_TST_SIMPLE_ORIENT)
 		{
 			// TODO: write the orient test in validation_tests.cpp
 		}

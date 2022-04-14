@@ -47,7 +47,7 @@ void setup()
 	// Create a counting semaphore with a maximum value of 1 and an initial
 	// value of 0. Starts ADCS in standby mode.
 	modeQ = xQueueCreate(1, sizeof(uint8_t));
-	uint8_t mode = MODE_STANDBY;
+	uint8_t mode = CMD_STANDBY;
 	xQueueSend(modeQ, (void *)&mode, (TickType_t)0);
 
 	// enable LED

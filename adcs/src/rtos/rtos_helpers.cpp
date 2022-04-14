@@ -8,9 +8,8 @@
 
 extern QueueHandle_t modeQ;
 
-void state_machine_transition(uint8_t cmd)
+void state_machine_transition(uint8_t mode)
 {
-	uint8_t mode;
 	uint8_t curr_mode = CMD_STANDBY; // standby by default
 	// get the current state to compare against
 	xQueuePeek(modeQ, &curr_mode, 0);
@@ -20,13 +19,17 @@ void state_machine_transition(uint8_t cmd)
 	char debug_str[16];
 #endif
 
+	if (mode == curr_mode) // if not, exit
+	{
+		return;
+	}
+
 	bool command_is_valid = true;
 
-	switch (cmd)
+	switch (mode)
 	{
 	case CMD_HEARTBEAT:
 		// do test command stuff
-		mode = MODE_HEARTBEAT;
 #if DEBUG
 		SERCOM_USB.write("[mode switch]\tEntering HEARTBEAT mode\r\n");
 #endif
@@ -39,7 +42,6 @@ void state_machine_transition(uint8_t cmd)
 	case CMD_TST_BASIC_AC:
 	case CMD_TST_SIMPLE_DETUMBLE:
 	case CMD_TST_SIMPLE_ORIENT:
-		mode = MODE_TEST;
 #if DEBUG
 		SERCOM_USB.write("[mode switch]\tEntering TEST mode\r\n");
 #endif
@@ -50,7 +52,6 @@ void state_machine_transition(uint8_t cmd)
 		break;
 
 	case CMD_STANDBY:
-		mode = MODE_STANDBY;
 #if DEBUG
 		SERCOM_USB.write("[mode switch]\tEntering STANDBY mode\r\n");
 #endif
@@ -83,11 +84,6 @@ void state_machine_transition(uint8_t cmd)
 		SERCOM_USB.print(debug_str);
 		SERCOM_USB.print("\r\n");
 #endif
-	}
-
-	if (mode == curr_mode) // if not, exit
-	{
-		return;
 	}
 
 	if (command_is_valid)
