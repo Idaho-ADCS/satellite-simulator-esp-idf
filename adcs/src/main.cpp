@@ -21,7 +21,7 @@
 /* NON-RTOS GLOBAL VARIABLES ================================================ */
 
 // DRV10970 object
-DRV10970 flywhl(6, 9, 0, 10, 5);  // pin 0 needs to be something else
+DRV10970 flywhl(A1, 6, 9, 0, 10, 5);  // pin 0 needs to be something else
 
 /* RTOS GLOBAL VARIABLES ==================================================== */
 
