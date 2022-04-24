@@ -147,18 +147,23 @@ export default {
         modeInt = 0;
         clearInterval(this.timer);
       }
+	  else
+	  {
+		  this.timer = setInterval(this.updateData, 550);
+	  }
+
       if (this.mode === "Measure") {
         modeInt = 1;
         clearInterval(this.timer);
-        this.timer = setInterval(this.updateData, 550);
+        // this.timer = setInterval(this.updateData, 550);
       }
 	  if (this.mode === "Simple Detumble Test") {
 		modeInt = 2;
-		clearInterval(this.timer);
+		// clearInterval(this.timer);
 	  }
 	  if (this.mode === "Simple Motion Test") {
 		modeInt = 3;
-		clearInterval(this.timer);
+		// clearInterval(this.timer);
 	  }
 
       this.$ajax

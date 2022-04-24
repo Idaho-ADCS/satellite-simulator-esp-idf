@@ -136,7 +136,7 @@ void heartbeat(void *pvParameters)
 	{
 		xQueuePeek(modeQ, (void *)&mode, (TickType_t)0);
 
-		if (mode == CMD_HEARTBEAT)
+		if (mode != CMD_STANDBY)
 		{
 			data_packet.setStatus(STATUS_OK);
 
@@ -430,11 +430,11 @@ void simple_detumble(void *pvParameters)
 			// unsigned pwm to motor with direction
 			if (error > 0)
 			{
-				flywhl.run(REV, abs(pwm_output));
+				flywhl.run(FWD, abs(pwm_output));
 			}
 			else if (error < 0)
 			{
-				flywhl.run(FWD, abs(pwm_output));
+				flywhl.run(REV, abs(pwm_output));
 			}
 			else
 			{

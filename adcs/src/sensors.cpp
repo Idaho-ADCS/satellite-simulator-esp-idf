@@ -100,7 +100,7 @@ IMUdata readIMU(void)
 
 	data.gyrX = sensor_ptr1->gyrY();
 	data.gyrY = sensor_ptr1->gyrX();
-	data.gyrZ = sensor_ptr1->gyrZ() * -1;
+	data.gyrZ = (sensor_ptr1->gyrZ() * -1) - 2.0;
 #endif
 
 	return data;
