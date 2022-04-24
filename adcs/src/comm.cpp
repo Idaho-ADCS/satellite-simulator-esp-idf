@@ -110,6 +110,7 @@ void ADCSdata::clear()
 
 void ADCSdata::send()
 {
+	computeCRC();
 	SERCOM_UART.write((char*)_data, PACKET_LEN);
 }
 

@@ -126,6 +126,8 @@ private:
 			uint16_t _crc;
 		};
 	};
+	
+	void computeCRC();
 
 public:
 	ADCSdata();
@@ -133,7 +135,6 @@ public:
 	void setINAdata(INAdata data);
 	void setSpeed(float s);
 	void setIMUdata(IMUdata data);
-	void computeCRC();
 	uint8_t *getBytes();
 	void clear();
 	void send();

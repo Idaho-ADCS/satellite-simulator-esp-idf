@@ -14,7 +14,7 @@
           v-model="mode"
           color="yellow accent-4"
           :items="modes"
-          label="Command"
+          label="Mode"
           :disabled="!enable"
           @change="set_mode"
         ></v-select>
@@ -58,7 +58,7 @@ export default {
       timer: null,
       enable: false,
       mode: "Standby",
-      modes: ["Standby", "Measure", "Simple Detumble Test"],
+      modes: ["Standby", "Measure", "Simple Detumble Test", "Simple Motion Test"],
 
       headers: [
         {
@@ -154,6 +154,10 @@ export default {
       }
 	  if (this.mode === "Simple Detumble Test") {
 		modeInt = 2;
+		clearInterval(this.timer);
+	  }
+	  if (this.mode === "Simple Motion Test") {
+		modeInt = 3;
 		clearInterval(this.timer);
 	  }
 

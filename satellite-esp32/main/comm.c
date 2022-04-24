@@ -10,21 +10,14 @@
 static const int RX_BUF_SIZE = 1024;
 static const char *TAG = "tes-uart";
 
+int uart_enabled;
+
 ADCSdata packet_global;
 // int num_packets;
 
-static void rx_task(void *arg);
-
 void init_uart(void)
 {
-	int i;
-	for (i = 0; i < PACKET_LEN; i++)
-	{
-		packet_global._data[i] = 0;
-	}
-	packet_global._seq = 0;
-
-    const uart_config_t uart_config = {
+	const uart_config_t uart_config = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_ODD,
@@ -37,7 +30,15 @@ void init_uart(void)
     uart_param_config(UART_NUM_1, &uart_config);
     uart_set_pin(UART_NUM_1, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 
-	xTaskCreate(rx_task, "uart_rx_task", 1024*2, NULL, configMAX_PRIORITIES, NULL);
+	uart_enabled = 1;
+
+	// xTaskCreate(rx_task, "uart_rx_task", 1024*2, NULL, configMAX_PRIORITIES, NULL);
+}
+
+void disable_uart(void)
+{
+	uart_enabled = 0;
+	uart_driver_delete(UART_NUM_1);
 }
 
 int send_command(uint8_t cmd)
@@ -52,7 +53,7 @@ int send_command(uint8_t cmd)
     return txBytes;
 }
 
-static void rx_task(void *arg)
+void rx_task(void *arg)
 {
 	// ADCSdata packet;
 	uint8_t *data = (uint8_t *)malloc(RX_BUF_SIZE + 1);
@@ -64,55 +65,60 @@ static void rx_task(void *arg)
 
 	while (1)
 	{
-		const int rxBytes = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 100 / portTICK_RATE_MS);
-
-		rxBytesCopy = rxBytes;
-
-		if (rxBytes > 0)
+		if(uart_enabled)
 		{
-			ESP_LOGI(TAG, "Read %d bytes", rxBytes);
-			ESP_LOG_BUFFER_HEXDUMP(TAG, data, rxBytes, ESP_LOG_INFO);
+			const int rxBytes = uart_read_bytes(UART_NUM_1, data, RX_BUF_SIZE, 0);
 
-			if (rxBytesCopy >= PACKET_LEN)
+			rxBytesCopy = rxBytes;
+
+			if (rxBytes > 0)
 			{
-				packet_global._seq = seq;
-				seq++;
+				ESP_LOGI(TAG, "Read %d bytes", rxBytes);
+				ESP_LOG_BUFFER_HEXDUMP(TAG, data, rxBytes, ESP_LOG_INFO);
 
-				for (i = 0; i < PACKET_LEN; i++)
+				if (rxBytesCopy >= PACKET_LEN)
 				{
-					packet_global._data[i] = data[i];
-					// rxBytesCopy--;
+					packet_global._seq = seq;
+					seq++;
+
+					for (i = 0; i < PACKET_LEN; i++)
+					{
+						packet_global._data[i] = data[i];
+						// rxBytesCopy--;
+					}
+
+					// ESP_LOGI(TAG, "Sequence: %d", packet._seq);
+
+					// if (packet._status == STATUS_OK)
+					// 	ESP_LOGI(TAG, "Status: OK");
+					// if (packet._status == STATUS_HELLO)
+					// 	ESP_LOGI(TAG, "Status: HELLO");
+					// if (packet._status == STATUS_COMM_ERROR)
+					// 	ESP_LOGI(TAG, "Status: COMM ERROR");
+					// if (packet._status == STATUS_ADCS_ERROR)
+					// 	ESP_LOGI(TAG, "Status: SYSTEM ERROR");
+
+					// ESP_LOGI(TAG, "Voltage: %f", fixedToFloat(packet._voltage));
+					// ESP_LOGI(TAG, "Current: %d", packet._current);
+					// ESP_LOGI(TAG, "Motor speed: %d", packet._speed);
+					// ESP_LOGI(TAG, "Mag X: %d", packet._magX);
+					// ESP_LOGI(TAG, "Mag Y: %d", packet._magY);
+					// ESP_LOGI(TAG, "Mag Z: %d", packet._magZ);
+					// ESP_LOGI(TAG, "Gyro X: %f", fixedToFloat(packet._gyroX));
+					// ESP_LOGI(TAG, "Gyro Y: %f", fixedToFloat(packet._gyroY));
+					// ESP_LOGI(TAG, "Gyro Z: %f", fixedToFloat(packet._gyroZ));
+					
+
+					// packet_global = packet;
+					// num_packets++;
+
+					// if (num_packets > 10)
+					// 	num_packets = 10;
 				}
-
-				// ESP_LOGI(TAG, "Sequence: %d", packet._seq);
-
-				// if (packet._status == STATUS_OK)
-				// 	ESP_LOGI(TAG, "Status: OK");
-				// if (packet._status == STATUS_HELLO)
-				// 	ESP_LOGI(TAG, "Status: HELLO");
-				// if (packet._status == STATUS_COMM_ERROR)
-				// 	ESP_LOGI(TAG, "Status: COMM ERROR");
-				// if (packet._status == STATUS_ADCS_ERROR)
-				// 	ESP_LOGI(TAG, "Status: SYSTEM ERROR");
-
-				// ESP_LOGI(TAG, "Voltage: %f", fixedToFloat(packet._voltage));
-				// ESP_LOGI(TAG, "Current: %d", packet._current);
-				// ESP_LOGI(TAG, "Motor speed: %d", packet._speed);
-				// ESP_LOGI(TAG, "Mag X: %d", packet._magX);
-				// ESP_LOGI(TAG, "Mag Y: %d", packet._magY);
-				// ESP_LOGI(TAG, "Mag Z: %d", packet._magZ);
-				// ESP_LOGI(TAG, "Gyro X: %f", fixedToFloat(packet._gyroX));
-				// ESP_LOGI(TAG, "Gyro Y: %f", fixedToFloat(packet._gyroY));
-				// ESP_LOGI(TAG, "Gyro Z: %f", fixedToFloat(packet._gyroZ));
-				
-
-				// packet_global = packet;
-				// num_packets++;
-
-				// if (num_packets > 10)
-				// 	num_packets = 10;
 			}
 		}
+
+		vTaskDelay(10 / portTICK_RATE_MS);
 	}
 
 	free(data);

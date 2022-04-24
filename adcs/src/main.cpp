@@ -34,6 +34,10 @@ DRV10970 flywhl(6, 9, 0, 10, 5);  // pin 0 needs to be something else
  */
 QueueHandle_t modeQ;
 
+/* HELPER FUNCTIONS ========================================================= */
+
+void blinkLED(unsigned int num);
+
 /* "MAIN" =================================================================== */
 
 /**
@@ -44,6 +48,10 @@ QueueHandle_t modeQ;
  */
 void setup()
 {
+	delay(1000);
+
+	ADCSdata data_packet;
+
 	// Create a counting semaphore with a maximum value of 1 and an initial
 	// value of 0. Starts ADCS in standby mode.
 	modeQ = xQueueCreate(1, sizeof(uint8_t));
@@ -54,6 +62,8 @@ void setup()
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, HIGH);
 
+	// delay(2000);
+
 	// pinMode(9, OUTPUT);
 	// digitalWrite(9, HIGH);
 
@@ -62,30 +72,45 @@ void setup()
 
 #if DEBUG
 	initUSB();
+	// data_packet.setStatus(0x01);
+	// blinkLED(1);
 #endif
 
 	initUART();
+	// data_packet.setStatus(0x02);
+	// blinkLED(2);
 
 #if NUM_IMUS > 0
 	initI2C();
+	// data_packet.setStatus(0x03);
+	// blinkLED(3);
+
 	initIMU();
+	// data_packet.setStatus(0x04);
+	// blinkLED(4);
 #endif
 
 #if INA
 	initINA();
+	// data_packet.setStatus(0x05);
+	// blinkLED(5);
 #endif
 
 	pinMode(9, OUTPUT);
 	digitalWrite(9, HIGH); // set the direction pin HIGH??
+#if DEBUG
+	SERCOM_USB.print("[system init]\tMotor direction set high\r\n");
+#endif
+	// data_packet.setStatus(0x06);
+	// blinkLED(6);
 
 	pinMode(10, OUTPUT);
 	analogWrite(10, 0); // set the PWM pin to 0%
-
-	// initialization completed, notify satellite
-	ADCSdata data_packet;
-	data_packet.setStatus(STATUS_HELLO);
-	data_packet.computeCRC();
-	data_packet.send();
+#if DEBUG
+	SERCOM_USB.print("[system init]\tPWM set to 0%\r\n");
+#endif
+	// data_packet.setStatus(0x07);
+	// blinkLED(7);
 
 	// instantiate tasks and start scheduler
 	xTaskCreate(receiveCommand, "Read UART", 256, NULL, 2, NULL);
@@ -102,13 +127,25 @@ void setup()
 	SERCOM_USB.print("[rtos]\t\tStarting task scheduler\r\n");
 #endif
 
+	create_test_tasks();
+	// data_packet.setStatus(0x08);
+	// blinkLED(8);
+
+	// initialization completed, notify satellite
+	// ADCSdata data_packet;
+	data_packet.setStatus(STATUS_HELLO);
+	data_packet.send();
+	// blinkLED(9);
+
+	// delay(10);
+	// digitalWrite(LED_BUILTIN, HIGH);
+
 	vTaskStartScheduler();
 
 	// should never be reached if everything goes right
 	while (1)
 	{
 		data_packet.setStatus(STATUS_ADCS_ERROR);
-		data_packet.computeCRC();
 		data_packet.send();
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 	}
@@ -126,6 +163,7 @@ void setup()
 void loop()
 {
 	// do nothing
+	// blinkLED(1);
 }
 
 void _general_exception_handler(unsigned long ulCause, unsigned long ulStatus)
@@ -139,6 +177,25 @@ void _general_exception_handler(unsigned long ulCause, unsigned long ulStatus)
 	while (1)
 	{
 		error_msg.send();
+		digitalWrite(LED_BUILTIN, HIGH);
+		vNopDelayMS(1000);
+		digitalWrite(LED_BUILTIN, LOW);
 		vNopDelayMS(5000);
 	}
+}
+
+void blinkLED(unsigned int num)
+{
+	digitalWrite(LED_BUILTIN, LOW);
+	delay(500);
+
+	for (unsigned int i = 0; i < num; i++)
+	{
+		digitalWrite(LED_BUILTIN, HIGH);
+		delay(250);
+		digitalWrite(LED_BUILTIN, LOW);
+		delay(250);
+	}
+
+	delay(500);
 }

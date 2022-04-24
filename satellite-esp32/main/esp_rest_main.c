@@ -35,6 +35,8 @@ static const char *TAG = "tes";
 
 esp_err_t start_rest_server(const char *base_path);
 
+extern ADCSdata packet_global;
+
 static void initialise_mdns(void)
 {
     mdns_init();
@@ -135,7 +137,20 @@ void app_main(void)
 	gpio_set_direction(GPIO_ENABLE, GPIO_MODE_OUTPUT);
 	gpio_set_level(GPIO_ENABLE, 0);
 
-	init_uart();
+	gpio_reset_pin(TXD_PIN);
+	gpio_set_direction(TXD_PIN, GPIO_MODE_OUTPUT);
+	gpio_set_level(TXD_PIN, 0);
+
+	int i;
+	for (i = 0; i < PACKET_LEN; i++)
+	{
+		packet_global._data[i] = 0;
+	}
+	packet_global._seq = 0;
+
+	xTaskCreate(rx_task, "uart_rx_task", 1024*2, NULL, configMAX_PRIORITIES, NULL);
+
+	// init_uart();
 
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());

@@ -2,11 +2,13 @@
 #include "rtos/rtos_helpers.h"
 #include "rtos/rtos_tasks.h"
 #include "comm.h"
+#include "DRV_10970.h"
 #include "supportFunctions.h"
 
 #include "FreeRTOS_SAMD51.h"
 
 extern QueueHandle_t modeQ;
+extern DRV10970 flywhl;
 
 void state_machine_transition(uint8_t mode)
 {
@@ -23,6 +25,8 @@ void state_machine_transition(uint8_t mode)
 	{
 		return;
 	}
+
+	flywhl.stop();
 
 	bool command_is_valid = true;
 
@@ -47,7 +51,7 @@ void state_machine_transition(uint8_t mode)
 #endif
 
 // #if RTOS_TEST_SUITE
-		create_test_tasks();
+		// create_test_tasks();
 // #endif
 		break;
 
@@ -100,10 +104,10 @@ void create_test_tasks(void)
 	SERCOM_USB.print("[rtos]\t\tInitializing RTOS test suite\r\n");
 #endif
 
-	vTaskSuspendAll(); // suspend scheduler while new tasks are created
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tSuspended scheduler while tasks are created\r\n");
-#endif
+// 	vTaskSuspendAll(); // suspend scheduler while new tasks are created
+// #if DEBUG
+// 	SERCOM_USB.print("[rtos]\t\tSuspended scheduler while tasks are created\r\n");
+// #endif
 
 	xTaskCreate(basic_motion, "BASIC MOTION", 256, NULL, 1, NULL);
 #if DEBUG
@@ -130,10 +134,10 @@ void create_test_tasks(void)
 	SERCOM_USB.print("[rtos]\t\tCreated simple orient task\r\n");
 #endif
 
-	xTaskResumeAll(); // resume scheduler after tasks are created
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tResumed scheduler\r\n");
-#endif
+// 	xTaskResumeAll(); // resume scheduler after tasks are created
+// #if DEBUG
+// 	SERCOM_USB.print("[rtos]\t\tResumed scheduler\r\n");
+// #endif
 
 #if DEBUG
 	SERCOM_USB.print("[rtos]\t\tInitialized RTOS test suite\r\n");

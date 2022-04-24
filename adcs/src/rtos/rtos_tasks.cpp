@@ -95,7 +95,6 @@ void receiveCommand(void *pvParameters)
 			{
 				// send error message if data length is incorrect
 				response.setStatus(STATUS_COMM_ERROR);
-				response.computeCRC();
 				response.send();
 #if DEBUG
 				SERCOM_USB.print("[command rx]\tReceived incorrect number of bytes - transmitting error message\r\n");
@@ -151,7 +150,6 @@ void heartbeat(void *pvParameters)
 			data_packet.setINAdata(ina);
 #endif
 
-			data_packet.computeCRC();
 			data_packet.send(); // send to TES
 
 #if DEBUG
@@ -192,7 +190,7 @@ void basic_motion(void *pvParameters)
 
 	uint8_t *tx_buf;
 	uint8_t mode;
-	int multiplier = 0.00;
+	float multiplier = 0.00;
 	int pwm_sig = 255 * multiplier; // 0%
 	const int MAX_TEST_SPD = 10;	// upper limit is 10 degrees per second/1.667 rpm
 
@@ -203,7 +201,6 @@ void basic_motion(void *pvParameters)
 	// notify the TES by sending an empty packet with status set
 	ADCSdata data;
 	data.setStatus(STATUS_TEST_START);
-	data.computeCRC();
 
 	while (true)
 	{
@@ -235,68 +232,70 @@ void basic_motion(void *pvParameters)
 #endif
 			}
 
-			imu = readIMU();
-			float rot_vel_z = imu.gyrZ;
+			flywhl.run(FWD, 2);
 
-			if (rot_vel_z < MAX_TEST_SPD && multiplier < 1.0)
-			{ // as long as we are spinning slower than our goal, continue
-				pwm_sig = 255 * multiplier;
-				flywhl.run(FWD, pwm_sig);
+// 			imu = readIMU();
+// 			float rot_vel_z = imu.gyrZ;
 
-				if (multiplier < 1.0)
-				{
-					multiplier += 0.01;
-				}
-#if DEBUG
-				else
-				{
-					SERCOM_USB.print("[basic motion]\tMultiplier hit ceiling\r\n");
-				}
-#endif
-			}
-			else
-			{ // stop the test
-				flywhl.stop();
+// 			if (rot_vel_z < MAX_TEST_SPD && multiplier < 1.0)
+// 			{ // as long as we are spinning slower than our goal, continue
+// 				pwm_sig = 255 * multiplier;
+// 				flywhl.run(FWD, pwm_sig);
 
-				// notify the TES by sending an empty packet with status set
-				data.setStatus(STATUS_TEST_END);
-				data.computeCRC();
-				data.send();
-#if DEBUG
-				tx_buf = data.getBytes();
-				sprintf(debug_str, "%d", PACKET_LEN);
-				SERCOM_USB.print("[basic motion]\tTransmitted ");
-				SERCOM_USB.print(debug_str);
-				SERCOM_USB.print(" bytes:  [");
+// 				if (multiplier < 1.0)
+// 				{
+// 					multiplier += 0.01;
+// 				}
+// #if DEBUG
+// 				else
+// 				{
+// 					SERCOM_USB.print("[basic motion]\tMultiplier hit ceiling\r\n");
+// 				}
+// #endif
+// 			}
+// 			else
+// 			{ // stop the test
+// 				flywhl.stop();
 
-				for (int i = 0; i < PACKET_LEN; i++)
-				{
-					sprintf(debug_str, " %02x", tx_buf[i]);
-					SERCOM_USB.print(debug_str);
-				}
+// 				// notify the TES by sending an empty packet with status set
+// 				data.setStatus(STATUS_TEST_END);
+// 				data.computeCRC();
+// 				data.send();
+// #if DEBUG
+// 				tx_buf = data.getBytes();
+// 				sprintf(debug_str, "%d", PACKET_LEN);
+// 				SERCOM_USB.print("[basic motion]\tTransmitted ");
+// 				SERCOM_USB.print(debug_str);
+// 				SERCOM_USB.print(" bytes:  [");
 
-				SERCOM_USB.print(" ]\r\n");
-#endif
+// 				for (int i = 0; i < PACKET_LEN; i++)
+// 				{
+// 					sprintf(debug_str, " %02x", tx_buf[i]);
+// 					SERCOM_USB.print(debug_str);
+// 				}
 
-#if DEBUG
-				if (rot_vel_z > MAX_TEST_SPD)
-				{
-					SERCOM_USB.print("[basic motion]\tRotational velocity greater than MAX_TEST_SPD ( ");
-					SERCOM_USB.print(MAX_TEST_SPD);
-					SERCOM_USB.print(" deg/s )\r\n");
-				}
-				else if (multiplier >= 1)
-				{
-					SERCOM_USB.print("[basic motion]\tMultiplier hit ceiling but velocity still ");
-					SERCOM_USB.print(rot_vel_z);
-					SERCOM_USB.print(" deg/s\r\n");
-				}
-#endif
+// 				SERCOM_USB.print(" ]\r\n");
+// #endif
 
-				// change mode to standby
-				uint8_t mode = MODE_STANDBY;
-				xQueueOverwrite(modeQ, (void *)&mode); // enter specified mode
-			}
+// #if DEBUG
+// 				if (rot_vel_z > MAX_TEST_SPD)
+// 				{
+// 					SERCOM_USB.print("[basic motion]\tRotational velocity greater than MAX_TEST_SPD ( ");
+// 					SERCOM_USB.print(MAX_TEST_SPD);
+// 					SERCOM_USB.print(" deg/s )\r\n");
+// 				}
+// 				else if (multiplier >= 1)
+// 				{
+// 					SERCOM_USB.print("[basic motion]\tMultiplier hit ceiling but velocity still ");
+// 					SERCOM_USB.print(rot_vel_z);
+// 					SERCOM_USB.print(" deg/s\r\n");
+// 				}
+// #endif
+
+// 				// change mode to standby
+// 				uint8_t mode = MODE_STANDBY;
+// 				xQueueOverwrite(modeQ, (void *)&mode); // enter specified mode
+// 			}
 		}
 
 		vTaskDelay(FREQ);
@@ -387,7 +386,7 @@ void simple_detumble(void *pvParameters)
 	int num_steps = 1;
 /***********************************************************************************************************************/
 
-	const float P = 0.25; // proportional component
+	const float P = 1; // proportional component
 	int I = 0;			  // integral component
 	int D = 0;			  // derivative component
 
@@ -431,11 +430,11 @@ void simple_detumble(void *pvParameters)
 			// unsigned pwm to motor with direction
 			if (error > 0)
 			{
-				flywhl.run(REV, pwm_output);
+				flywhl.run(REV, abs(pwm_output));
 			}
 			else if (error < 0)
 			{
-				flywhl.run(FWD, pwm_output);
+				flywhl.run(FWD, abs(pwm_output));
 			}
 			else
 			{
@@ -454,13 +453,13 @@ void simple_detumble(void *pvParameters)
 				SERCOM_USB.print("\r\n");
 
 				SERCOM_USB.print("\t\tPWM OUTPUT = ");
-				SERCOM_USB.print(pwm_output);
+				SERCOM_USB.print(abs(pwm_output));
 				SERCOM_USB.print("\r\n\t\t======================\r\n");
 #endif
 
 			prev_error = error;
 		}
-		vTaskDelay(pdMS_TO_TICKS(1000));
+		vTaskDelay(pdMS_TO_TICKS(10));
 	}
 }
 

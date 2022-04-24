@@ -140,17 +140,26 @@ static esp_err_t adcs_enable_post_handler(httpd_req_t *req)
     cJSON *root = cJSON_Parse(buf);
     int enable = cJSON_GetObjectItem(root, "enable")->valueint;
 
-	if (!enable)
-		send_command(CMD_STANDBY);
+	// if (!enable)
+	// 	send_command(CMD_STANDBY);
 	
 	gpio_set_level(GPIO_ENABLE, enable);
     ESP_LOGI(REST_TAG, "ADCS enable: %d", enable);
 	cJSON_Delete(root);
 
 	if (enable)
+	{
+		init_uart();
+		send_command(CMD_HEARTBEAT);
     	httpd_resp_sendstr(req, "Enabled ADCS");
+	}
 	else
+	{
+		disable_uart();
+		gpio_set_direction(TXD_PIN, GPIO_MODE_OUTPUT);
+		gpio_set_level(TXD_PIN, 0);
 		httpd_resp_sendstr(req, "Disabled ADCS");
+	}
 
     return ESP_OK;
 }
@@ -197,6 +206,11 @@ static esp_err_t adcs_mode_post_handler(httpd_req_t *req)
 		case 2:
 		send_command(CMD_TST_SIMPLE_DETUMBLE);
 		httpd_resp_sendstr(req, "Initiating detumble test");
+		break;
+
+		case 3:
+		send_command(CMD_TST_BASIC_MOTION);
+		httpd_resp_sendstr(req, "Initiating motion test");
 		break;
 
 		default:

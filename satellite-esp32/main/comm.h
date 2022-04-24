@@ -78,7 +78,10 @@ typedef struct
 #define RXD_PIN (GPIO_NUM_2)
 
 void init_uart(void);
+void disable_uart(void);
 int send_command(uint8_t cmd);
+
+void rx_task(void *arg);
 
 // fixed/float conversions
 fixed5_3_t floatToFixed(float f);
