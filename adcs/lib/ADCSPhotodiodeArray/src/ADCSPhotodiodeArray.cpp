@@ -33,6 +33,10 @@ void ADCSPhotodiodeArray::init(void)
 
 /*
  * Read the value measured on one of the 6 multiplexer channels.
+ *
+ * @param[in]  channel  The channel/coordinate related sensor. Can be PhotodiodeCoordinate from ADCSPhotodiodeArray.h.
+ *
+ * @return     Scaled voltage between 0 and 3.3V
  */
 float ADCSPhotodiodeArray::read(uint8_t channel)
 {

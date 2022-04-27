@@ -523,7 +523,23 @@ void simple_orient(void *pvParameters)
 
 		if (mode == CMD_TST_SIMPLE_ORIENT)
 		{
-			// TODO: write the orient test in validation_tests.cpp
+			// read photodiodes
+			PDdata pdata = readPD();
+			// read the direction the satellite needs to move to align
+			MotorDirection md = getDirection(pdata);
+
+			// spin motor so that X+ is pointed at light
+			if(md != IDLE){
+				#if DEBUG
+					SERCOM_USB.println("[simple orient]\t motor set to run");
+				#endif
+				flywhl.run(md, 3);
+			}else{	// aligned so don't move
+				#if DEBUG
+					SERCOM_USB.println("[simple orient]\t motor stopped");
+				#endif
+				flywhl.stop();
+			}
 		}
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}

@@ -2,7 +2,6 @@
 #include "rtos/rtos_helpers.h"
 #include "rtos/rtos_tasks.h"
 #include "comm.h"
-#include "DRV_10970.h"
 #include "supportFunctions.h"
 
 #include "FreeRTOS_SAMD51.h"
@@ -139,3 +138,42 @@ void create_test_tasks(void)
 	SERCOM_USB.print("[rtos]\t\tInitialized RTOS test suite\r\n");
 #endif
 }
+
+// get direction the adcs should turn to align X+ with the light source
+//
+// @param[in]  vals  The sensor values, unscaled
+//
+// @return     The direction to turn the adcs (clockwise or counter-clockwise)
+//
+MotorDirection getDirection(PDdata vals){
+	uint8_t max=0; // channel receiving the most light
+	float max_val=-1;
+	// calculate side/channel receiving most light, ignore +/-Z so only look at first 4 values
+	for(int i=0; i < 4; i++){
+		if(vals.data[i] >= max_val){
+			// save channel and value
+			max_val = vals.data[i];
+			max = i;
+		}
+	}
+
+	#if DEBUG 
+		SERCOM_USB.print("getDirection found max on channel = ");
+		SERCOM_USB.println(max);
+	#endif
+
+	// translate to coordinates and calculate direction to spin
+	switch(max){
+		case X_POS:
+			return IDLE;
+		case X_NEG:
+			return FWD;
+		case Y_POS:
+			return REV;
+		case Y_NEG:
+			return FWD;
+		case Z_POS:
+		case Z_NEG:
+			return IDLE;
+	}
+} 

@@ -3,6 +3,7 @@
 
 #include "ICM_20948.h"
 #include "INA209.h"
+#include "ADCSPhotodiodeArray.h"
 
 #define NUM_IMUS 1
 #define INA 1

@@ -20,7 +20,11 @@ const int   MEN = A1,       // motor power enable pin
             DRV_PWM = 10,   // pwm output pin
             DRV_RD = 5;     // lock indication pin
 
-enum MotorDirection {REV=0, FWD=1};
+enum MotorDirection {   
+                    REV=0,  // counter clockwise
+                    FWD=1,  // clockwise
+                    IDLE=2  // don't move
+                    };
 
 class DRV10970 {
     private:
