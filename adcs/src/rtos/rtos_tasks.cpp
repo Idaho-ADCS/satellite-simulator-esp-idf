@@ -124,6 +124,7 @@ void heartbeat(void *pvParameters)
 	ADCSdata data_packet;
 	INAdata ina;
 	IMUdata imu;
+	PDdata pd;
 
 	uint8_t *tx_buf;
 
@@ -136,7 +137,7 @@ void heartbeat(void *pvParameters)
 	{
 		xQueuePeek(modeQ, (void *)&mode, (TickType_t)0);
 
-		if (mode != CMD_STANDBY)
+		if (mode != CMD_STANDBY && mode != CMD_TST_PHOTODIODES)
 		{
 			data_packet.setStatus(STATUS_OK);
 
@@ -149,6 +150,8 @@ void heartbeat(void *pvParameters)
 			ina = readINA();
 			data_packet.setINAdata(ina);
 #endif
+
+			pd = readPD();
 
 			data_packet.send(); // send to TES
 
@@ -172,6 +175,39 @@ void heartbeat(void *pvParameters)
 		}
 
 		vTaskDelay(500 / portTICK_PERIOD_MS);
+	}
+}
+
+void photodiode_test(void *pvParameters)
+{
+	uint8_t mode;
+	PDdata pd;
+
+#if DEBUG
+	SERCOM_USB.print("[sun test]\tTask started\r\n");
+#endif
+
+	while (1)
+	{
+		xQueuePeek(modeQ, (void *)&mode, (TickType_t)0);
+
+		if (mode == CMD_TST_PHOTODIODES)
+		{
+			pd = readPD();
+
+			for (int channel = 0; channel < 6; channel++)
+			{
+#if DEBUG
+				SERCOM_USB.print(pd.data[channel]);
+				SERCOM_USB.print(", ");
+#endif
+			}
+#if DEBUG
+			SERCOM_USB.print("\r\n");
+#endif
+		}
+
+		vTaskDelay(100 / portTICK_PERIOD_MS);
 	}
 }
 

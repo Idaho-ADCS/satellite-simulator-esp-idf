@@ -20,11 +20,12 @@
 
 class ADCSPhotodiodeArray {
 private:
-	uint8_t analog_pin, a, b, c;
+	uint8_t _input, _a, _b, _c;
 
 public:
 	ADCSPhotodiodeArray(uint8_t analog_input, uint8_t a, uint8_t b, uint8_t c);
-	int read(uint8_t channel); // select which channel to read from by number
+	void init(void);
+	float read(uint8_t channel); // select which channel to read from by number
 };
 
 #endif

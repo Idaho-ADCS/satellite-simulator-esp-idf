@@ -213,6 +213,11 @@ static esp_err_t adcs_mode_post_handler(httpd_req_t *req)
 		httpd_resp_sendstr(req, "Initiating motion test");
 		break;
 
+		case 4:
+		send_command(CMD_TST_PHOTODIODES);
+		httpd_resp_sendstr(req, "Initiating photodiode test");
+		break;
+
 		default:
 		httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Mode not recognized");
 		return ESP_FAIL;

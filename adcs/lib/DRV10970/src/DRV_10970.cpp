@@ -17,8 +17,11 @@ DRV10970::DRV10970(int men, int fg, int fr, int brkmod, int pwm, int rd){
     BRKMOD = brkmod;    // brake mode setting pin
     PWM = pwm;          // variable duty cycle pwm input pin for speed control
     RD = rd;            // lock indication pin
+}
 
-    // set pin modes
+void DRV10970::init(void)
+{
+	// set pin modes
     pinMode(MEN, OUTPUT);
     digitalWrite(MEN, LOW); // turn off power to the motor initially
 

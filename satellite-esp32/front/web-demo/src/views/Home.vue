@@ -58,7 +58,7 @@ export default {
       timer: null,
       enable: false,
       mode: "Standby",
-      modes: ["Standby", "Measure", "Simple Detumble Test", "Simple Motion Test"],
+      modes: ["Standby", "Heartbeat", "Detumble Test", "Motor Test", "Photodiode Test"],
 
       headers: [
         {
@@ -147,23 +147,24 @@ export default {
         modeInt = 0;
         clearInterval(this.timer);
       }
-	  else
-	  {
-		  this.timer = setInterval(this.updateData, 550);
-	  }
-
-      if (this.mode === "Measure") {
+      if (this.mode === "Heartbeat") {
         modeInt = 1;
         clearInterval(this.timer);
-        // this.timer = setInterval(this.updateData, 550);
+        this.timer = setInterval(this.updateData, 550);
       }
-	  if (this.mode === "Simple Detumble Test") {
+	  if (this.mode === "Detumble Test") {
 		modeInt = 2;
+		this.timer = setInterval(this.updateData, 550);
 		// clearInterval(this.timer);
 	  }
-	  if (this.mode === "Simple Motion Test") {
+	  if (this.mode === "Motor Test") {
 		modeInt = 3;
+		this.timer = setInterval(this.updateData, 550);
 		// clearInterval(this.timer);
+	  }
+	  if (this.mode === "Photodiode Test") {
+		modeInt = 4;
+		clearInterval(this.timer);
 	  }
 
       this.$ajax

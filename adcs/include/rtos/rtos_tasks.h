@@ -3,6 +3,7 @@
 
 void receiveCommand(void *pvParameters);
 void heartbeat(void *pvParameters);
+void photodiode_test(void *pvParameters);
 
 void basic_motion(void* pvParameters);
 void basic_attitude_determination(void *pvParameters);

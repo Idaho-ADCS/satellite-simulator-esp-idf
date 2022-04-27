@@ -46,6 +46,7 @@ void state_machine_transition(uint8_t mode)
 	case CMD_TST_BASIC_AC:
 	case CMD_TST_SIMPLE_DETUMBLE:
 	case CMD_TST_SIMPLE_ORIENT:
+	case CMD_TST_PHOTODIODES:
 #if DEBUG
 		SERCOM_USB.print("[mode switch]\tEntering TEST mode\r\n");
 #endif
@@ -104,39 +105,34 @@ void create_test_tasks(void)
 	SERCOM_USB.print("[rtos]\t\tInitializing RTOS test suite\r\n");
 #endif
 
-// 	vTaskSuspendAll(); // suspend scheduler while new tasks are created
-// #if DEBUG
-// 	SERCOM_USB.print("[rtos]\t\tSuspended scheduler while tasks are created\r\n");
-// #endif
+	xTaskCreate(photodiode_test, "PHOTODIODE TEST", 256, NULL, 1, NULL);
+#if DEBUG
+	SERCOM_USB.print("[rtos]\t\tCreated photodiode test task\r\n");
+#endif
 
 	xTaskCreate(basic_motion, "BASIC MOTION", 256, NULL, 1, NULL);
 #if DEBUG
 	SERCOM_USB.print("[rtos]\t\tCreated basic motion task\r\n");
 #endif
 
-	xTaskCreate(basic_attitude_determination, "BASIC AD", 256, NULL, 1, NULL);
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tCreated basic attitude determination task\r\n");
-#endif
+// 	xTaskCreate(basic_attitude_determination, "BASIC AD", 256, NULL, 1, NULL);
+// #if DEBUG
+// 	SERCOM_USB.print("[rtos]\t\tCreated basic attitude determination task\r\n");
+// #endif
 
-	xTaskCreate(basic_attitude_control, "BASIC AC", 256, NULL, 1, NULL);
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tCreated basic attitude control task\r\n");
-#endif
+// 	xTaskCreate(basic_attitude_control, "BASIC AC", 256, NULL, 1, NULL);
+// #if DEBUG
+// 	SERCOM_USB.print("[rtos]\t\tCreated basic attitude control task\r\n");
+// #endif
 
 	xTaskCreate(simple_detumble, "SIMPLE DETUMBLE", 256, NULL, 1, NULL);
 #if DEBUG
 	SERCOM_USB.print("[rtos]\t\tCreated simple detumble task\r\n");
 #endif
 
-	xTaskCreate(simple_orient, "SIMPLE ORIENT", 256, NULL, 1, NULL);
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tCreated simple orient task\r\n");
-#endif
-
-// 	xTaskResumeAll(); // resume scheduler after tasks are created
+// 	xTaskCreate(simple_orient, "SIMPLE ORIENT", 256, NULL, 1, NULL);
 // #if DEBUG
-// 	SERCOM_USB.print("[rtos]\t\tResumed scheduler\r\n");
+// 	SERCOM_USB.print("[rtos]\t\tCreated simple orient task\r\n");
 // #endif
 
 #if DEBUG

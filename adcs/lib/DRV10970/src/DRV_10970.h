@@ -28,6 +28,7 @@ class DRV10970 {
     public:
         DRV10970(void){}
         DRV10970(int men, int fg, int fr, int brkmod, int pwm, int rd);
+		void init(void);
         void run(MotorDirection dir, int dc); // drive motor in direction at dutycycle dc
         void stop(); // stop motor driver and put in low power state
         int readRPM(bool); // returns the rpm of motor spindle

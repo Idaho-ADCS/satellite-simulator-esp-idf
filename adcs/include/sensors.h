@@ -9,6 +9,7 @@
 
 /* DATA TYPES =============================================================== */
 
+// magnetometer and gyroscope data from IMU
 typedef struct
 {
 	float magX;
@@ -19,21 +20,40 @@ typedef struct
 	float gyrZ;
 } IMUdata;
 
+// voltage and current from INA209
 typedef struct
 {
 	float voltage;
 	int current;
 } INAdata;
 
+// photodiode data
+typedef union
+{
+	float data[6];
+
+	struct
+	{
+		float x_pos;
+		float x_neg;
+		float y_pos;
+		float y_neg;
+		float z_pos;
+		float z_neg;
+	};
+} PDdata;
+
 /* HARDWARE INIT FUNCTIONS ================================================== */
 
 void initIMU(void);
 void initINA(void);
+void initSunSensors(void);
 
 /* SENSOR READING FUNCTIONS ================================================= */
 
 IMUdata readIMU(void);
 INAdata readINA(void);
+PDdata readPD(void);
 
 /* PRINTING FUNCTIONS ======================================================= */
 

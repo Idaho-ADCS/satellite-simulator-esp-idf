@@ -4,6 +4,7 @@
 #include "rtos/rtos_helpers.h"
 #include "comm.h"
 #include "sensors.h"
+#include "actuators.h"
 #include "supportFunctions.h"
 #include "commandFunctions.h"
 #include "DRV_10970.h"
@@ -20,8 +21,7 @@
 
 /* NON-RTOS GLOBAL VARIABLES ================================================ */
 
-// DRV10970 object
-DRV10970 flywhl(A1, 6, 9, 0, 10, 5);  // pin 0 needs to be something else
+
 
 /* RTOS GLOBAL VARIABLES ==================================================== */
 
@@ -95,6 +95,10 @@ void setup()
 	// data_packet.setStatus(0x05);
 	// blinkLED(5);
 #endif
+
+	initSunSensors();
+
+	initFlyWhl();
 
 	pinMode(9, OUTPUT);
 	digitalWrite(9, HIGH); // set the direction pin HIGH??

@@ -1,11 +1,14 @@
 #include "flags.h"
 #include "sensors.h"
+#include "ADCSPhotodiodeArray.h"
 #include "comm.h"
 
 ICM_20948_I2C IMU1;
 ICM_20948_I2C IMU2;
 
 INA209 ina209;
+
+ADCSPhotodiodeArray sunSensors(A0, 13, 12, 11);
 
 /* HARDWARE INIT FUNCTIONS ================================================== */
 
@@ -65,6 +68,14 @@ void initINA(void)
 #endif
 }
 
+void initSunSensors(void)
+{
+	sunSensors.init();
+#if DEBUG
+	SERCOM_USB.print("[system init]\tSun sensors initialized\r\n");
+#endif
+}
+
 /* SENSOR READING FUNCTIONS ================================================= */
 
 IMUdata readIMU(void)
@@ -103,6 +114,24 @@ IMUdata readIMU(void)
 	data.gyrZ = (sensor_ptr1->gyrZ() * -1) - 2.0;
 #endif
 
+#if DEBUG
+	SERCOM_USB.print("[readIMU]\tMag:  [");
+	SERCOM_USB.print(data.magX);
+	SERCOM_USB.print(", ");
+	SERCOM_USB.print(data.magY);
+	SERCOM_USB.print(", ");
+	SERCOM_USB.print(data.magZ);
+	SERCOM_USB.print("]\r\n");
+
+	SERCOM_USB.print("[readIMU]\tGyro: [");
+	SERCOM_USB.print(data.gyrX);
+	SERCOM_USB.print(", ");
+	SERCOM_USB.print(data.gyrY);
+	SERCOM_USB.print(", ");
+	SERCOM_USB.print(data.gyrZ);
+	SERCOM_USB.print("]\r\n");
+#endif
+
 	return data;
 }
 
@@ -117,7 +146,46 @@ INAdata readINA(void)
 	i_raw = ina209.current();
 
 	data.voltage = v_raw / 1000.0f;
-	data.current = i_raw / 10;
+	data.current = i_raw / 10.0f;
+
+#if DEBUG
+	SERCOM_USB.print("[readINA]\tBus voltage: ");
+	SERCOM_USB.print(data.voltage);
+	SERCOM_USB.print("V\r\n");
+
+	SERCOM_USB.print("[readINA]\tCurrent: ");
+	SERCOM_USB.print(data.current);
+	SERCOM_USB.print("mA\r\n");
+#endif
+
+	return data;
+}
+
+PDdata readPD(void)
+{
+	PDdata data;
+	uint8_t channel;
+
+	for (channel = 0; channel < 6; channel++)
+	{
+		data.data[channel] = sunSensors.read(channel);
+	}
+
+// #if DEBUG
+// 	SERCOM_USB.print("[readPD]\tSun sensors: [ [");
+// 	SERCOM_USB.print(data.x_pos);
+// 	SERCOM_USB.print(", ");
+// 	SERCOM_USB.print(data.x_neg);
+// 	SERCOM_USB.print("], [");
+// 	SERCOM_USB.print(data.y_pos);
+// 	SERCOM_USB.print(", ");
+// 	SERCOM_USB.print(data.y_neg);
+// 	SERCOM_USB.print("], [");
+// 	SERCOM_USB.print(data.z_pos);
+// 	SERCOM_USB.print(", ");
+// 	SERCOM_USB.print(data.z_neg);
+// 	SERCOM_USB.print("] ]\r\n");
+// #endif
 
 	return data;
 }
