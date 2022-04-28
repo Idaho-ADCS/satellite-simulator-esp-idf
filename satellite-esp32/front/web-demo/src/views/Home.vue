@@ -58,7 +58,7 @@ export default {
       timer: null,
       enable: false,
       mode: "Standby",
-      modes: ["Standby", "Heartbeat", "Detumble Test", "Motor Test", "Photodiode Test"],
+      modes: ["Standby", "Heartbeat", "Detumble Test", "Motor Test", "Photodiode Test", "Orient Test"],
 
       headers: [
         {
@@ -164,6 +164,10 @@ export default {
 	  }
 	  if (this.mode === "Photodiode Test") {
 		modeInt = 4;
+		clearInterval(this.timer);
+	  }
+	  if (this.mode === "Orient Test") {
+		modeInt = 5;
 		clearInterval(this.timer);
 	  }
 

@@ -207,7 +207,7 @@ void photodiode_test(void *pvParameters)
 #endif
 		}
 
-		vTaskDelay(100 / portTICK_PERIOD_MS);
+		vTaskDelay(500 / portTICK_PERIOD_MS);
 	}
 }
 
@@ -541,6 +541,6 @@ void simple_orient(void *pvParameters)
 				flywhl.stop();
 			}
 		}
-		vTaskDelay(pdMS_TO_TICKS(1000));
+		vTaskDelay(pdMS_TO_TICKS(100));
 	}
 }

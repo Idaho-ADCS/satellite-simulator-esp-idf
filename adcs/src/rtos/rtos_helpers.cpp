@@ -129,10 +129,10 @@ void create_test_tasks(void)
 	SERCOM_USB.print("[rtos]\t\tCreated simple detumble task\r\n");
 #endif
 
-// 	xTaskCreate(simple_orient, "SIMPLE ORIENT", 256, NULL, 1, NULL);
-// #if DEBUG
-// 	SERCOM_USB.print("[rtos]\t\tCreated simple orient task\r\n");
-// #endif
+	xTaskCreate(simple_orient, "SIMPLE ORIENT", 256, NULL, 1, NULL);
+#if DEBUG
+	SERCOM_USB.print("[rtos]\t\tCreated simple orient task\r\n");
+#endif
 
 #if DEBUG
 	SERCOM_USB.print("[rtos]\t\tInitialized RTOS test suite\r\n");
