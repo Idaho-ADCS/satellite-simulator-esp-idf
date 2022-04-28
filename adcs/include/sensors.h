@@ -16,6 +16,8 @@ typedef struct
 	float magX;
 	float magY;
 	float magZ;
+	float gyrX;
+	float gyrY;
 	float gyrZ;
 } IMUdata;
 

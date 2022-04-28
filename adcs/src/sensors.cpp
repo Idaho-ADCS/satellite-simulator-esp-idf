@@ -12,6 +12,12 @@ INA209 ina209;
 
 ADCSPhotodiodeArray sunSensors(A0, 13, 12, 11);
 
+QueueHandle_t IMUq;
+QueueHandle_t INAq;
+QueueHandle_t PDq;
+
+SemaphoreHandle_t IMUsemphr;
+
 /* HARDWARE INIT FUNCTIONS ================================================== */
 
 void initIMU(void)
@@ -40,6 +46,19 @@ void initIMU(void)
     SERCOM_USB.print("[system init]\tIMU2 initialized\r\n");
 	#endif
 #endif
+
+	IMUq = xQueueCreate(1, sizeof(IMUdata));
+	IMUdata dummy_init;
+	dummy_init.magX = 0.0f;
+	dummy_init.magY = 0.0f;
+	dummy_init.magZ = 0.0f;
+	dummy_init.gyrZ = 0.0f;
+	xQueueSend(IMUq, (void *)&dummy_init, (TickType_t)0);
+
+	IMUsemphr = xSemaphoreCreateBinary();
+	xSemaphoreGive(IMUsemphr);
+
+	xTaskCreate(readIMU_rtos, "IMU read", 256, NULL, 1, NULL);
 }
 
 void initINA(void)
@@ -194,13 +213,28 @@ void readIMU_rtos(void *pvParameters)
 	const int DECIMATION = 4;
 	const int NUM_DECIMATIONS = 8;
 
+	float gyrXavgs[NUM_DECIMATIONS];
+	float gyrYavgs[NUM_DECIMATIONS];
 	float gyrZavgs[NUM_DECIMATIONS];
-	float gyrZresult;
+
+	float gyrXresult = 0.0f;
+	float gyrYresult = 0.0f;
+	float gyrZresult = 0.0f;
+
 	int readcntr = 0;
 	int avgcntr = 0;
 
+	result.magX = 0.0f;
+	result.magY = 0.0f;
+	result.magZ = 0.0f;
+	result.gyrX = 0.0f;
+	result.gyrY = 0.0f;
+	result.gyrZ = 0.0f;
+
 	for (int i = 0; i < NUM_DECIMATIONS; i++)
 	{
+		gyrXavgs[i] = 0.0f;
+		gyrYavgs[i] = 0.0f;
 		gyrZavgs[i] = 0.0f;
 	}
 	
@@ -208,34 +242,54 @@ void readIMU_rtos(void *pvParameters)
 	{
 		if (IMU1.dataReady())
 		{
+			xSemaphoreTake(IMUsemphr, 0);
 			IMU1.getAGMT();
+			xSemaphoreGive(IMUsemphr);
 
 			result.magX = sensor_ptr1->magX();
 			result.magY = sensor_ptr1->magY();
 			result.magZ = sensor_ptr1->magZ();
 
+			gyrXavgs[avgcntr] += sensor_ptr1->gyrX();
+			gyrYavgs[avgcntr] += sensor_ptr1->gyrY();
 			gyrZavgs[avgcntr] += sensor_ptr1->gyrZ();
+
 			readcntr++;
 
 			if (readcntr >= DECIMATION)
 			{
+				gyrXavgs[avgcntr] /= (float)DECIMATION;
+				gyrYavgs[avgcntr] /= (float)DECIMATION;
 				gyrZavgs[avgcntr] /= (float)DECIMATION;
 
 				for (int i = 0; i < NUM_DECIMATIONS; i++)
 				{
+					gyrXresult += gyrXavgs[i];
+					gyrYresult += gyrYavgs[i];
 					gyrZresult += gyrZavgs[i];
 				}
 
+				gyrXresult /= (float)NUM_DECIMATIONS;
+				gyrYresult /= (float)NUM_DECIMATIONS;
 				gyrZresult /= (float)NUM_DECIMATIONS;
+
+				result.gyrX = gyrXresult;
+				result.gyrY = gyrYresult;
 				result.gyrZ = gyrZresult;
 
 				avgcntr = (avgcntr + 1) % NUM_DECIMATIONS;
+
+				gyrXavgs[avgcntr] = 0.0f;
+				gyrYavgs[avgcntr] = 0.0f;
 				gyrZavgs[avgcntr] = 0.0f;
+				
 				readcntr = 0;
 			}
 		}
 
-		vTaskDelay(pdMS_TO_TICKS(5));
+		xQueueOverwrite(IMUq, &result);
+
+		vTaskDelay(5 / portTICK_PERIOD_MS);
 	}
 }
 

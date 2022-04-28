@@ -275,6 +275,8 @@ static esp_err_t adcs_data_get_handler(httpd_req_t *req)
 		cJSON_AddNumberToObject(obj, "magx", packet_copy._magX);
 		cJSON_AddNumberToObject(obj, "magy", packet_copy._magY);
 		cJSON_AddNumberToObject(obj, "magz", packet_copy._magZ);
+		cJSON_AddNumberToObject(obj, "gyrox", fixedToFloat(packet_copy._gyroX));
+		cJSON_AddNumberToObject(obj, "gyroy", fixedToFloat(packet_copy._gyroY));
 		cJSON_AddNumberToObject(obj, "gyroz", fixedToFloat(packet_copy._gyroZ));
 
 		// cJSON_AddItemToArray(arr, obj);

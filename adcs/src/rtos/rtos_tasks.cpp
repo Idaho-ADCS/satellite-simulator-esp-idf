@@ -13,6 +13,10 @@ extern DRV10970 flywhl;
 extern ICM_20948_I2C IMU1;
 extern QueueHandle_t modeQ;
 
+extern QueueHandle_t IMUq;
+
+extern SemaphoreHandle_t IMUsemphr;
+
 /**
  * @brief
  * Polls the UART module for data. Processes data one byte at a time if the
@@ -135,6 +139,7 @@ void heartbeat(void *pvParameters)
 
 	while (1)
 	{
+		xSemaphoreTake(IMUsemphr, portMAX_DELAY);
 		xQueuePeek(modeQ, (void *)&mode, (TickType_t)0);
 
 		if (mode != CMD_STANDBY && mode != CMD_TST_PHOTODIODES)
@@ -142,7 +147,12 @@ void heartbeat(void *pvParameters)
 			data_packet.setStatus(STATUS_OK);
 
 #if NUM_IMUS > 0
-			imu = readIMU();
+			xQueuePeek(IMUq, (void *)&imu, (TickType_t)10);
+	#if DEBUG
+			SERCOM_USB.print("[heartbeat]\tGyro Z: ");
+			SERCOM_USB.print(imu.gyrZ);
+			SERCOM_USB.print("\r\n");
+	#endif
 			data_packet.setIMUdata(imu);
 #endif
 

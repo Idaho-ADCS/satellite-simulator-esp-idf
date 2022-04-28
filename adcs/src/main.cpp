@@ -117,12 +117,12 @@ void setup()
 	// blinkLED(7);
 
 	// instantiate tasks and start scheduler
-	xTaskCreate(receiveCommand, "Read UART", 256, NULL, 2, NULL);
+	xTaskCreate(receiveCommand, "Read UART", 256, NULL, 3, NULL);
 #if DEBUG
 	SERCOM_USB.print("[rtos]\t\tTask receiveCommand created\r\n");
 #endif
 
-	xTaskCreate(heartbeat, "Write UART", 256, NULL, 1, NULL);
+	xTaskCreate(heartbeat, "Write UART", 256, NULL, 2, NULL);
 #if DEBUG
 	SERCOM_USB.print("[rtos]\t\tTask heartbeat created\r\n");
 #endif
@@ -149,6 +149,9 @@ void setup()
 	// should never be reached if everything goes right
 	while (1)
 	{
+#if DEBUG
+		SERCOM_USB.println("ERROR");
+#endif
 		data_packet.setStatus(STATUS_ADCS_ERROR);
 		data_packet.send();
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -180,6 +183,9 @@ void _general_exception_handler(unsigned long ulCause, unsigned long ulStatus)
 
 	while (1)
 	{
+#if DEBUG
+		SERCOM_USB.println("ERROR");
+#endif
 		error_msg.send();
 		digitalWrite(LED_BUILTIN, HIGH);
 		vNopDelayMS(1000);

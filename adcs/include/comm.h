@@ -14,7 +14,7 @@
 
 // packet sizes in bytes
 #define COMMAND_LEN 4
-#define PACKET_LEN 12
+#define PACKET_LEN 14
 
 // command values
 enum Command : uint8_t
@@ -121,6 +121,8 @@ private:
 			int8_t _magX;
 			int8_t _magY;
 			int8_t _magZ;
+			fixed5_3_t _gyroX;
+			fixed5_3_t _gyroY;
 			fixed5_3_t _gyroZ;
 			uint16_t _crc;
 		};

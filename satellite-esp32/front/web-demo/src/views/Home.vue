@@ -41,6 +41,8 @@
             <td>{{ props.item.magx }}</td>
             <td>{{ props.item.magy }}</td>
             <td>{{ props.item.magz }}</td>
+            <td>{{ props.item.gyrox }}</td>
+            <td>{{ props.item.gyroy }}</td>
             <td>{{ props.item.gyroz }}</td>
           </template>
         </v-data-table>
@@ -96,6 +98,16 @@ export default {
         {
           text: "Mag Z (uT)",
           value: "magz",
+          sortable: false,
+        },
+        {
+          text: "Gyro X (deg/s)",
+          value: "gyrox",
+          sortable: false,
+        },
+        {
+          text: "Gyro Y (deg/s)",
+          value: "gyroy",
           sortable: false,
         },
         {
