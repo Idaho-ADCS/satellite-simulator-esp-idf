@@ -3,6 +3,8 @@
 #include "ADCSPhotodiodeArray.h"
 #include "comm.h"
 
+#include "FreeRTOS_SAMD51.h"
+
 ICM_20948_I2C IMU1;
 ICM_20948_I2C IMU2;
 
@@ -97,25 +99,21 @@ IMUdata readIMU(void)
 		IMU2.getAGMT();
 
 	// extract data from IMU object
-	data.magX = (sensor_ptr1->magY() + sensor_ptr2->magY()) / 2;
-	data.magY = (sensor_ptr1->magX() + sensor_ptr2->magX()) / 2;
-	data.magZ = (sensor_ptr1->magZ() + sensor_ptr2->magZ()) / -2;
+	data.magX = (sensor_ptr1->magX() + sensor_ptr2->magX()) / 2;
+	data.magY = (sensor_ptr1->magY() + sensor_ptr2->magY()) / 2;
+	data.magZ = (sensor_ptr1->magZ() + sensor_ptr2->magZ()) / 2;
 
-	data.gyrX = (sensor_ptr1->gyrY() + sensor_ptr2->gyrY()) / 2;
-	data.gyrY = (sensor_ptr1->gyrX() + sensor_ptr2->gyrX()) / 2;
-	data.gyrZ = (sensor_ptr1->gyrZ() + sensor_ptr2->gyrZ()) / -2;
+	data.gyrZ = (sensor_ptr1->gyrZ() + sensor_ptr2->gyrZ()) / 2;
 #else
-	data.magX = sensor_ptr1->magY();
-	data.magY = sensor_ptr1->magX();
-	data.magZ = sensor_ptr1->magZ() * -1;
+	data.magX = sensor_ptr1->magX();
+	data.magY = sensor_ptr1->magY();
+	data.magZ = sensor_ptr1->magZ();
 
-	data.gyrX = sensor_ptr1->gyrY();
-	data.gyrY = sensor_ptr1->gyrX();
-	data.gyrZ = (sensor_ptr1->gyrZ() * -1) - 2.0;
+	data.gyrZ = sensor_ptr1->gyrZ();
 #endif
 
 #if DEBUG
-	SERCOM_USB.print("[readIMU]\tMag:  [");
+	SERCOM_USB.print("[readIMU]\tMag: [");
 	SERCOM_USB.print(data.magX);
 	SERCOM_USB.print(", ");
 	SERCOM_USB.print(data.magY);
@@ -123,13 +121,9 @@ IMUdata readIMU(void)
 	SERCOM_USB.print(data.magZ);
 	SERCOM_USB.print("]\r\n");
 
-	SERCOM_USB.print("[readIMU]\tGyro: [");
-	SERCOM_USB.print(data.gyrX);
-	SERCOM_USB.print(", ");
-	SERCOM_USB.print(data.gyrY);
-	SERCOM_USB.print(", ");
+	SERCOM_USB.print("[readIMU]\tGyro Z:");
 	SERCOM_USB.print(data.gyrZ);
-	SERCOM_USB.print("]\r\n");
+	SERCOM_USB.print("\r\n");
 #endif
 
 	return data;
@@ -188,6 +182,61 @@ PDdata readPD(void)
 // #endif
 
 	return data;
+}
+
+/* SENSOR RTOS TASKS ======================================================== */
+
+void readIMU_rtos(void *pvParameters)
+{
+	ICM_20948_I2C *sensor_ptr1 = &IMU1;
+	IMUdata result;
+
+	const int DECIMATION = 4;
+	const int NUM_DECIMATIONS = 8;
+
+	float gyrZavgs[NUM_DECIMATIONS];
+	float gyrZresult;
+	int readcntr = 0;
+	int avgcntr = 0;
+
+	for (int i = 0; i < NUM_DECIMATIONS; i++)
+	{
+		gyrZavgs[i] = 0.0f;
+	}
+	
+	while (1)
+	{
+		if (IMU1.dataReady())
+		{
+			IMU1.getAGMT();
+
+			result.magX = sensor_ptr1->magX();
+			result.magY = sensor_ptr1->magY();
+			result.magZ = sensor_ptr1->magZ();
+
+			gyrZavgs[avgcntr] += sensor_ptr1->gyrZ();
+			readcntr++;
+
+			if (readcntr >= DECIMATION)
+			{
+				gyrZavgs[avgcntr] /= (float)DECIMATION;
+
+				for (int i = 0; i < NUM_DECIMATIONS; i++)
+				{
+					gyrZresult += gyrZavgs[i];
+				}
+
+				gyrZresult /= (float)NUM_DECIMATIONS;
+				result.gyrZ = gyrZresult;
+
+				avgcntr = (avgcntr + 1) % NUM_DECIMATIONS;
+				gyrZavgs[avgcntr] = 0.0f;
+				readcntr = 0;
+			}
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(5));
+	}
 }
 
 /* PRINTING FUNCTIONS ======================================================= */

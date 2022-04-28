@@ -85,8 +85,6 @@ void ADCSdata::setIMUdata(IMUdata data)
 	_magY = (int8_t)data.magY;
 	_magZ = (int8_t)data.magZ;
 
-	_gyroX = floatToFixed(data.gyrX);
-	_gyroY = floatToFixed(data.gyrY);
 	_gyroZ = floatToFixed(data.gyrZ);
 }
 

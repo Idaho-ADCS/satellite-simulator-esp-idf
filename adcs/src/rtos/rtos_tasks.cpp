@@ -207,7 +207,7 @@ void photodiode_test(void *pvParameters)
 #endif
 		}
 
-		vTaskDelay(500 / portTICK_PERIOD_MS);
+		vTaskDelay(10 / portTICK_PERIOD_MS);
 	}
 }
 

@@ -16,8 +16,6 @@ typedef struct
 	float magX;
 	float magY;
 	float magZ;
-	float gyrX;
-	float gyrY;
 	float gyrZ;
 } IMUdata;
 
@@ -55,6 +53,10 @@ void initSunSensors(void);
 IMUdata readIMU(void);
 INAdata readINA(void);
 PDdata readPD(void);
+
+/* SENSOR RTOS TASKS ======================================================== */
+
+void readIMU_rtos(void *pvParameters);
 
 /* PRINTING FUNCTIONS ======================================================= */
 
