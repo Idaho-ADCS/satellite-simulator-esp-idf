@@ -167,11 +167,11 @@ MotorDirection getDirection(PDdata vals){
 		case X_POS:
 			return IDLE;
 		case X_NEG:
-			return FWD;
+			return CW;
 		case Y_POS:
-			return REV;
+			return CCW;
 		case Y_NEG:
-			return FWD;
+			return CW;
 		case Z_POS:
 		case Z_NEG:
 			return IDLE;

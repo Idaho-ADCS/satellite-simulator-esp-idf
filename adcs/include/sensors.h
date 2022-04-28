@@ -52,13 +52,13 @@ void initSunSensors(void);
 
 /* SENSOR READING FUNCTIONS ================================================= */
 
-IMUdata readIMU(void);
 INAdata readINA(void);
 PDdata readPD(void);
 
 /* SENSOR RTOS TASKS ======================================================== */
 
-void readIMU_rtos(void *pvParameters);
+void readIMU(void *pvParameters);
+void readINA_rtos(void *pvParameters);
 
 /* PRINTING FUNCTIONS ======================================================= */
 

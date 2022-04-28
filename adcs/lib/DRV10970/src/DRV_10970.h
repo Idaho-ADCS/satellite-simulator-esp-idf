@@ -21,8 +21,8 @@ const int   MEN = A1,       // motor power enable pin
             DRV_RD = 5;     // lock indication pin
 
 enum MotorDirection {   
-                    REV=0,  // counter clockwise
-                    FWD=1,  // clockwise
+                    CW=0,  // clockwise
+                    CCW=1,  // counter clockwise
                     IDLE=2  // don't move
                     };
 

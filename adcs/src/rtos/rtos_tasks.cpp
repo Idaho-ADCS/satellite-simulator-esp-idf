@@ -148,11 +148,6 @@ void heartbeat(void *pvParameters)
 
 #if NUM_IMUS > 0
 			xQueuePeek(IMUq, (void *)&imu, (TickType_t)10);
-	#if DEBUG
-			SERCOM_USB.print("[heartbeat]\tGyro Z: ");
-			SERCOM_USB.print(imu.gyrZ);
-			SERCOM_USB.print("\r\n");
-	#endif
 			data_packet.setIMUdata(imu);
 #endif
 
@@ -278,15 +273,16 @@ void basic_motion(void *pvParameters)
 #endif
 			}
 
-			flywhl.run(FWD, 2);
+			flywhl.run(CW, 2);
 
-// 			imu = readIMU();
+//			xSemaphoreTake(IMUsemphr, portMAX_DELAY);
+// 			xQueuePeek(IMUq, (void *)&imu, (TickType_t)10);
 // 			float rot_vel_z = imu.gyrZ;
 
 // 			if (rot_vel_z < MAX_TEST_SPD && multiplier < 1.0)
 // 			{ // as long as we are spinning slower than our goal, continue
 // 				pwm_sig = 255 * multiplier;
-// 				flywhl.run(FWD, pwm_sig);
+// 				flywhl.run(CW, pwm_sig);
 
 // 				if (multiplier < 1.0)
 // 				{
@@ -419,7 +415,6 @@ void basic_attitude_control(void *pvParameters)
 void simple_detumble(void *pvParameters)
 {
 #if DEBUG
-	char debug_str[16];
 	SERCOM_USB.print("[basic detumbl]\tTask started\r\n");
 #endif
 
@@ -452,8 +447,9 @@ void simple_detumble(void *pvParameters)
 
 		if (mode == CMD_TST_SIMPLE_DETUMBLE)
 		{
+			xSemaphoreTake(IMUsemphr, portMAX_DELAY);
 			// calculate error
-			imu = readIMU();
+			xQueuePeek(IMUq, &imu, 0);
 			float rot_vel_z = imu.gyrZ;
 
 			error = rot_vel_z - target_rot_vel; // difference between current state and target state
@@ -476,11 +472,11 @@ void simple_detumble(void *pvParameters)
 			// unsigned pwm to motor with direction
 			if (error > 0)
 			{
-				flywhl.run(FWD, abs(pwm_output));
+				flywhl.run(CW, abs(pwm_output));
 			}
 			else if (error < 0)
 			{
-				flywhl.run(REV, abs(pwm_output));
+				flywhl.run(CCW, abs(pwm_output));
 			}
 			else
 			{

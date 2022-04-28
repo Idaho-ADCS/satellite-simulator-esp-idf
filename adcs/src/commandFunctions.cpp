@@ -96,13 +96,13 @@ void orient(const char *direction)
 			//Rotate to stop rotation and call the function again after a select duration 
 			if(DIFFgyroZ > 0) //Positive spin
 			{
-				DRV->run(FWD, 0.1*255); // start at 10%
+				DRV->run(CW, 0.1*255); // start at 10%
 				while(millis() - t0 < duration){/*do nothing*/}
 				DRV->stop();
 			}
 			else //Negitive spin
 			{
-				DRV->run(FWD, 0.1*255); // start at 10%
+				DRV->run(CW, 0.1*255); // start at 10%
 				while(millis() - t0 < duration){/*do nothing*/}
 				DRV->stop();
 			}
