@@ -127,10 +127,6 @@ void setup()
 	SERCOM_USB.print("[rtos]\t\tTask heartbeat created\r\n");
 #endif
 
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tStarting task scheduler\r\n");
-#endif
-
 	create_test_tasks();
 	// data_packet.setStatus(0x08);
 	// blinkLED(8);
@@ -144,6 +140,9 @@ void setup()
 	// delay(10);
 	// digitalWrite(LED_BUILTIN, HIGH);
 
+#if DEBUG
+	SERCOM_USB.print("[rtos]\t\tStarting task scheduler\r\n");
+#endif
 	vTaskStartScheduler();
 
 	// should never be reached if everything goes right
@@ -154,7 +153,7 @@ void setup()
 #endif
 		data_packet.setStatus(STATUS_ADCS_ERROR);
 		data_packet.send();
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		delay(1000);
 	}
 }
 

@@ -61,6 +61,9 @@ void initIMU(void)
 	xSemaphoreGive(IMUsemphr);
 
 	xTaskCreate(readIMU, "IMU read", 256, NULL, 1, NULL);
+#if DEBUG
+	SERCOM_USB.print("[rtos]\t\tCreated IMU read task\r\n");
+#endif
 }
 
 void initINA(void)
@@ -99,7 +102,7 @@ void initINA(void)
 	INAsemphr = xSemaphoreCreateBinary();
 	xSemaphoreGive(INAsemphr);
 
-	xTaskCreate(readINA_rtos, "INA read", 256, NULL, 1, NULL);
+	// xTaskCreate(readINA_rtos, "INA read", 256, NULL, 1, NULL);
 }
 
 void initSunSensors(void)
