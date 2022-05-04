@@ -1,20 +1,8 @@
 // Our own headers
-#include "flags.h"
-#include "rtos/rtos_tasks.h"
-#include "rtos/rtos_helpers.h"
-#include "comm.h"
-#include "sensors.h"
+#include "global_definitions.h"
 #include "actuators.h"
-#include "supportFunctions.h"
-#include "commandFunctions.h"
-#include "DRV_10970.h"
-// only include this if test functions are desired
-//#include <test.h>
-
-// Arduino library headers
-#include "INA209.h"
-#include "ICM_20948.h"
-#include "FreeRTOS_SAMD51.h"
+#include "sensors.h"
+#include "rtos_tasks.h"
 
 // Standard C/C++ library headers
 #include <stdint.h>

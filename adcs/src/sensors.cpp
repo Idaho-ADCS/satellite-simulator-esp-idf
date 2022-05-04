@@ -1,9 +1,4 @@
-#include "flags.h"
 #include "sensors.h"
-#include "ADCSPhotodiodeArray.h"
-#include "comm.h"
-
-#include "FreeRTOS_SAMD51.h"
 
 ICM_20948_I2C IMU1;
 ICM_20948_I2C IMU2;

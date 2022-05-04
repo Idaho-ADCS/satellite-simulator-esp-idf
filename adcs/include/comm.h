@@ -1,16 +1,11 @@
 #ifndef __COMM_H__
 #define __COMM_H__
 
+#include "global_definitions.h"
 #include "sensors.h"
-#include "CRC16.h"
+#include <CRC16.h>
 #include <Wire.h>
 #include <stdint.h>
-
-// create more descriptive names for serial interfaces
-#define SERCOM_USB Serial
-#define SERCOM_UART Serial1
-#define SERCOM_I2C Wire
-#define AD0_VAL 1
 
 // packet sizes in bytes
 #define COMMAND_LEN 4

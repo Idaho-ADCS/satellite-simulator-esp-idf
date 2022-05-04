@@ -1,4 +1,3 @@
-#include "flags.h"
 #include "comm.h"
 
 /* TEScommand METHODS ======================================================= */

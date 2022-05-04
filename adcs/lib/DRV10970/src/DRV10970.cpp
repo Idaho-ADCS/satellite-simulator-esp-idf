@@ -7,7 +7,7 @@
  * Provides a configurable interface for working with the DRV 10970 motor driver. Initially written for University of Idaho senior capstone 2022 for use by the
  * Attitude adjustment team working for NASA.
  ****************************************************************/
-#include "DRV_10970.h"
+#include "DRV10970.h"
 
 DRV10970::DRV10970(int men, int fg, int fr, int brkmod, int pwm, int rd){
 
