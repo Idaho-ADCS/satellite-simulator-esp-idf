@@ -1,4 +1,3 @@
-#include "flags.h"
 #include "ADCSPhotodiodeArray.h"
 
 /*
