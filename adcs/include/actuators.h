@@ -1,3 +1,12 @@
+/**
+ * @defgroup   ACTUATORS actuators.cpp
+ *
+ * @brief      Flywheel helper functions. 
+ * @details    This file implements helper functions for initializing actuator objects such as the flywheel.
+ *
+ * @author     Garrett Wells, Parker Piedmont
+ * @date       2022
+ */
 #ifndef __ACTUATORS_H__
 #define __ACTUATORS_H__
 

@@ -1,6 +1,15 @@
+/**
+ * @defgroup   GLOBAL_DEFINITIONS global_definitions.h
+ *
+ * @brief      This file implements global definitions.
+ *
+ * @author     Garrett Wells, Parker Piedmont
+ * @date       2022
+ */
 #ifndef GLOBAL_DEFINITIONS_H
 #define GLOBAL_DEFINITIONS_H
 
+// set to 1 for the ADCS to print to the usb serial connection from SAMD51
 #define DEBUG 0
 
 // create more descriptive names for serial interfaces

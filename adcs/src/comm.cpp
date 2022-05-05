@@ -2,11 +2,19 @@
 
 /* TEScommand METHODS ======================================================= */
 
+/**
+ * @brief      Constructs a new instance and sets empty as default state
+ */
 TEScommand::TEScommand()
 {
 	clear();
 }
 
+/**
+ * @brief      Adds a byte to command
+ *
+ * @param[in]  b     Byte to be added to buffer, ignored if buffer is full
+ */
 void TEScommand::addByte(uint8_t b)
 {
 	_data[_bytes_received] = b;
@@ -23,6 +31,11 @@ void TEScommand::addByte(uint8_t b)
 	}
 }
 
+/**
+ * @brief      Places bytes of input into the data field prior to transmission
+ *
+ * @param      bytes  Bytes to be added to the command for transmission
+ */
 void TEScommand::loadBytes(uint8_t *bytes)
 {
 	for (int i = 0; i < COMMAND_LEN; i++)
@@ -31,16 +44,31 @@ void TEScommand::loadBytes(uint8_t *bytes)
 	}
 }
 
+/**
+ * @brief      Check if the command is full/ready to be sent/needs to be cleared before sending or receiving new command
+ *
+ * @return     True if full, False otherwise.
+ */
 bool TEScommand::isFull()
 {
 	return _full;
 }
 
+/**
+ * @brief      The command stored in the structure.
+ *
+ * @return     The command.
+ */
 uint8_t TEScommand::getCommand()
 {
 	return _command;
 }
 
+/**
+ * @brief      Check if the packet is still valid or has been compromised by a bit flipping
+ *
+ * @return     True if CRC is correct and packet is valid, False if packet should be discarded
+ */
 bool TEScommand::checkCRC()
 {
 	CRC16 crcGen;
@@ -52,6 +80,9 @@ bool TEScommand::checkCRC()
 		return false;
 }
 
+/**
+ * @brief      Empty the data field to receive/build a new command. When empty all fields are set to 0.
+ */
 void TEScommand::clear()
 {
 	for (int i = 0; i < COMMAND_LEN; i++)
@@ -62,22 +93,40 @@ void TEScommand::clear()
 
 /* ADCSdata METHODS ========================================================= */
 
+/**
+ * @brief      Constructs a new instance and sets it to empty by default. Empty fields are 0 by default.
+ */
 ADCSdata::ADCSdata()
 {
 	clear();
 }
 
+/**
+ * @brief      Sets the status, OK if all is good in our system, FUDGED if fake data or all 0's. See comm.h for possible values.
+ *
+ * @param[in]  s     System status as of this packet
+ */
 void ADCSdata::setStatus(uint8_t s)
 {
 	_status = s;
 }
 
+/**
+ * @brief      Set the voltage and current values in data packet from an INAdata read.
+ *
+ * @param[in]  data  System power data to send to TES for monitoring.
+ */
 void ADCSdata::setINAdata(INAdata data)
 {
 	_voltage = floatToFixed(data.voltage);
 	_current = (int8_t)data.current;
 }
 
+/**
+ * @brief      Set the IMU data fields in the data packet to inform TES system of it's velocity and IMU functionality.
+ *
+ * @param[in]  data  Magnetometer and Gyroscope values.
+ */
 void ADCSdata::setIMUdata(IMUdata data)
 {
 	_magX = (int8_t)data.magX;
@@ -89,6 +138,9 @@ void ADCSdata::setIMUdata(IMUdata data)
 	_gyroZ = floatToFixed(data.gyrZ);
 }
 
+/**
+ * @brief      Compute CRC for validation of the packet
+ */
 void ADCSdata::computeCRC()
 {
 	CRC16 crcGen;
@@ -96,17 +148,28 @@ void ADCSdata::computeCRC()
 	_crc = crcGen.getCRC();
 }
 
+/**
+ * @brief      Get the data field
+ *
+ * @return     Pointer to the data field
+ */
 uint8_t* ADCSdata::getBytes()
 {
 	return _data;
 }
 
+/**
+ * @brief      Clears the object by filling all data fields with 0.
+ */
 void ADCSdata::clear()
 {
 	for (int i = 0; i < PACKET_LEN; i++)
 		_data[i] = 0;
 }
 
+/**
+ * @brief      Send packet over UART connection
+ */
 void ADCSdata::send()
 {
 	computeCRC();
@@ -115,6 +178,9 @@ void ADCSdata::send()
 
 /* HARDWARE INIT FUNCTIONS ================================================== */
 
+/**
+ * @brief      Setup the USB serial connection at 115200 baud
+ */
 void initUSB(void)
 {
 	/**
@@ -128,6 +194,9 @@ void initUSB(void)
     SERCOM_USB.print("[system init]\tUSB interface initialized\r\n");
 }
 
+/**
+ * @brief      Initialize UART connection to TES system at 115200 baud
+ */
 void initUART(void)
 {
 	/**
@@ -139,11 +208,14 @@ void initUART(void)
     SERCOM_UART.begin(115200, SERIAL_8O1);
     while (!SERCOM_UART);  // wait for initialization to complete
 	SERCOM_UART.setTimeout(10);
-#if DEBUG
-    SERCOM_USB.print("[system init]\tUART interface initialized\r\n");
-#endif
+	#if DEBUG
+	    SERCOM_USB.print("[system init]\tUART interface initialized\r\n");
+	#endif
 }
 
+/**
+ * @brief      Initializes I2C bus and set clock to 400000
+ */
 void initI2C(void)
 {
 	/**
@@ -152,9 +224,9 @@ void initI2C(void)
      */
     SERCOM_I2C.begin();
     SERCOM_I2C.setClock(400000);
-#if DEBUG
-	SERCOM_USB.print("[system init]\tI2C interface initialized\r\n");
-#endif
+	#if DEBUG
+		SERCOM_USB.print("[system init]\tI2C interface initialized\r\n");
+	#endif
 }
 
 /* HELPER FUNCTIONS ========================================================= */

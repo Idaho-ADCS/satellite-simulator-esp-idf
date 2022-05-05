@@ -9,6 +9,16 @@
  ****************************************************************/
 #include "DRV10970.h"
 
+/**
+ * @brief      Constructs a new instance.
+ *
+ * @param[in]  men     The motor enable pin
+ * @param[in]  fg      The frequency indication pin
+ * @param[in]  fr      Motor direction pin
+ * @param[in]  brkmod  Brake mode pin
+ * @param[in]  pwm     The pwm signal pin
+ * @param[in]  rd      Lock indication pin
+ */
 DRV10970::DRV10970(int men, int fg, int fr, int brkmod, int pwm, int rd){
 
     MEN = men;          // motor enable pin
@@ -19,6 +29,9 @@ DRV10970::DRV10970(int men, int fg, int fr, int brkmod, int pwm, int rd){
     RD = rd;            // lock indication pin
 }
 
+/**
+ * @brief      Initializes pin modes and states
+ */
 void DRV10970::init(void)
 {
 	// set pin modes
@@ -37,11 +50,11 @@ void DRV10970::init(void)
     pinMode(RD, INPUT);
 }
 
-/*
- * Write the motor direction to the motor direction control or FR pin.
- *      HIGH = UVW driving sequence (CW)
- *      LOW = UWV (CCW)
- *      NOTE: Minimum PWM duty cycle is 10%.
+/**
+ * @brief      Drive the pwm pin at a specified duty cycle
+ *
+ * @param[in]  dir   The direction the spindle should rotate
+ * @param[in]  dc    The duty cycle to run the motor at
  */
 void DRV10970::run(MotorDirection dir, int dc){
     // enable power to the motor
@@ -56,10 +69,8 @@ void DRV10970::run(MotorDirection dir, int dc){
     Serial.println("I'm DEPENDENT!!");
 }
 
-/*
- * Stop the motor spindle and send into a low power mode. Exit low power mode
- *  by driving PWM pin
- *      NOTE: pwm must be low for at least 1.2ms to enter low power mode
+/**
+ * @brief      Set the pwm pin output to low and disable power to the motor using motor enable
  */
 void DRV10970::stop(){
 
@@ -68,8 +79,12 @@ void DRV10970::stop(){
     
 }
 
-/*
- * Read the RPM of the spindle using the FG pin to measure frequency.
+/**
+ * @brief      Read the number of ticks on the motor frequency pin in 50 milliseconds
+ *
+ * @param[in]  debug  print debug statements
+ *
+ * @return     Number of ticks observed in 50 milliseconds
  */
 int DRV10970::readRPM(bool debug=false){
     long int t0 = millis(); // read start time
@@ -102,8 +117,10 @@ int DRV10970::readRPM(bool debug=false){
     return toggles;
 }
 
-/*
- * Read the RD pin to determine if the spindle is currently locked (HIGH).
+/**
+ * @brief      Check if the motor spindle is rotating (locked)
+ *
+ * @return     True if not locked, false otherwise
  */
 bool DRV10970::spindleFree(){
     return digitalRead(RD) == HIGH;

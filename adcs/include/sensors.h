@@ -1,3 +1,11 @@
+/**
+ * @defgroup   SENSORS sensors.cpp
+ *
+ * @brief      This file implements sensor initialization functions for main.cpp, data structures, and functions for reading from the sensors in RTOS.
+ *
+ * @author     Garrett Wells, Parker Piedmont
+ * @date       2022
+ */
 #ifndef __SENSORS_H__
 #define __SENSORS_H__
 

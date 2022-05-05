@@ -1,3 +1,11 @@
+/**
+ * @defgroup   COMM comm.cpp
+ *
+ * @brief      This file implements communications data structures, custom data types, data conversion functions, commands, and status codes for the satellite and ADCS communications.
+ *
+ * @author     Parker Piedmont
+ * @date       2022
+ */
 #ifndef __COMM_H__
 #define __COMM_H__
 
@@ -11,7 +19,9 @@
 #define COMMAND_LEN 4
 #define PACKET_LEN 14
 
-// command values
+/**
+ * @brief      Commands that the ADCS should expect to receive from the satellite
+ */
 enum Command : uint8_t
 {
 	CMD_DESATURATE = 0x00, // bring everything to a stop, maybe turn off?
@@ -32,7 +42,9 @@ enum Command : uint8_t
 	CMD_ORIENT_Y_NEG = 0xe3
 };
 
-// data packet status codes
+/**
+ * @brief      ADCS system status codes to send to the satellite
+ */
 enum Status : uint8_t
 {
 	STATUS_OK = 0xaa,		  // "Heartbeat"

@@ -1,4 +1,11 @@
-// Our own headers
+/**
+ * @defgroup   MAIN main.cpp
+ *
+ * @brief      This file implements main, initializes hardware, RTOS, and communication buses.
+ *
+ * @author     Garrett Wells, Parker Piedmont, Kristie Olds
+ * @date       2022
+ */
 #include "global_definitions.h"
 #include "actuators.h"
 #include "sensors.h"
@@ -14,8 +21,7 @@
 /* RTOS GLOBAL VARIABLES ==================================================== */
 
 /**
- * @brief
- * FreeRTOS queue that stores the current mode of the ADCS.
+ * @brief      	FreeRTOS queue that stores the current mode of the ADCS.
  * Possible values:
  *   MODE_STANDBY (0)
  *   MODE_HEARTBEAT    (1)
@@ -29,8 +35,7 @@ void blinkLED(unsigned int num);
 /* "MAIN" =================================================================== */
 
 /**
- * @brief
- * Since main is already defined by the Arduino framework, we will use the
+ * @brief      Since main is already defined by the Arduino framework, we will use the
  * setup function as if it were main. Since setup runs only once, it
  * essentially behaves the same as main.
  */
@@ -50,39 +55,32 @@ void setup()
 	pinMode(LED_BUILTIN, OUTPUT);
 	digitalWrite(LED_BUILTIN, HIGH);
 
-	// delay(2000);
 
-	// pinMode(9, OUTPUT);
-	// digitalWrite(9, HIGH);
-
-	// pinMode(10, OUTPUT);
-	// analogWrite(10, 127);
-
-#if DEBUG
-	initUSB();
-	// data_packet.setStatus(0x01);
-	// blinkLED(1);
-#endif
+	#if DEBUG
+		initUSB();
+		// data_packet.setStatus(0x01);
+		// blinkLED(1);
+	#endif
 
 	initUART();
 	// data_packet.setStatus(0x02);
 	// blinkLED(2);
 
-#if NUM_IMUS > 0
-	initI2C();
-	// data_packet.setStatus(0x03);
-	// blinkLED(3);
+	#if NUM_IMUS > 0
+		initI2C();
+		// data_packet.setStatus(0x03);
+		// blinkLED(3);
 
-	initIMU();
-	// data_packet.setStatus(0x04);
-	// blinkLED(4);
-#endif
+		initIMU();
+		// data_packet.setStatus(0x04);
+		// blinkLED(4);
+	#endif
 
-#if INA
-	initINA();
-	// data_packet.setStatus(0x05);
-	// blinkLED(5);
-#endif
+	#if INA
+		initINA();
+		// data_packet.setStatus(0x05);
+		// blinkLED(5);
+	#endif
 
 	initSunSensors();
 
@@ -90,30 +88,30 @@ void setup()
 
 	pinMode(9, OUTPUT);
 	digitalWrite(9, HIGH); // set the direction pin HIGH??
-#if DEBUG
-	SERCOM_USB.print("[system init]\tMotor direction set high\r\n");
-#endif
+	#if DEBUG
+		SERCOM_USB.print("[system init]\tMotor direction set high\r\n");
+	#endif
 	// data_packet.setStatus(0x06);
 	// blinkLED(6);
 
 	pinMode(10, OUTPUT);
 	analogWrite(10, 0); // set the PWM pin to 0%
-#if DEBUG
-	SERCOM_USB.print("[system init]\tPWM set to 0%\r\n");
-#endif
+	#if DEBUG
+		SERCOM_USB.print("[system init]\tPWM set to 0%\r\n");
+	#endif
 	// data_packet.setStatus(0x07);
 	// blinkLED(7);
 
 	// instantiate tasks and start scheduler
 	xTaskCreate(receiveCommand, "Read UART", 256, NULL, 3, NULL);
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tTask receiveCommand created\r\n");
-#endif
+	#if DEBUG
+		SERCOM_USB.print("[rtos]\t\tTask receiveCommand created\r\n");
+	#endif
 
 	xTaskCreate(heartbeat, "Write UART", 256, NULL, 2, NULL);
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tTask heartbeat created\r\n");
-#endif
+	#if DEBUG
+		SERCOM_USB.print("[rtos]\t\tTask heartbeat created\r\n");
+	#endif
 
 	create_test_tasks();
 	// data_packet.setStatus(0x08);
@@ -128,17 +126,17 @@ void setup()
 	// delay(10);
 	// digitalWrite(LED_BUILTIN, HIGH);
 
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tStarting task scheduler\r\n");
-#endif
+	#if DEBUG
+		SERCOM_USB.print("[rtos]\t\tStarting task scheduler\r\n");
+	#endif
 	vTaskStartScheduler();
 
 	// should never be reached if everything goes right
 	while (1)
 	{
-#if DEBUG
-		SERCOM_USB.println("ERROR");
-#endif
+		#if DEBUG
+			SERCOM_USB.println("ERROR");
+		#endif
 		data_packet.setStatus(STATUS_ADCS_ERROR);
 		data_packet.send();
 		delay(1000);
@@ -156,10 +154,16 @@ void setup()
  */
 void loop()
 {
-	// do nothing
+	// do nothing or enter low power mode
 	// blinkLED(1);
 }
 
+/**
+ * @brief      Default exception handler which is called internally by the microcontroller
+ *
+ * @param[in]  ulCause   The cause
+ * @param[in]  ulStatus  The status
+ */
 void _general_exception_handler(unsigned long ulCause, unsigned long ulStatus)
 {
 	/* This overrides the definition provided by the kernel.  Other exceptions
@@ -170,9 +174,9 @@ void _general_exception_handler(unsigned long ulCause, unsigned long ulStatus)
 
 	while (1)
 	{
-#if DEBUG
-		SERCOM_USB.println("ERROR");
-#endif
+		#if DEBUG
+			SERCOM_USB.println("ERROR");
+		#endif
 		error_msg.send();
 		digitalWrite(LED_BUILTIN, HIGH);
 		vNopDelayMS(1000);
@@ -181,6 +185,11 @@ void _general_exception_handler(unsigned long ulCause, unsigned long ulStatus)
 	}
 }
 
+/**
+ * @brief      Blink builtin LED some number of times, with quarter second delay
+ *
+ * @param[in]  num   The number of blinks
+ */
 void blinkLED(unsigned int num)
 {
 	digitalWrite(LED_BUILTIN, LOW);

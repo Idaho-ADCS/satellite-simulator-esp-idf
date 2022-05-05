@@ -1,3 +1,11 @@
+/**
+ * @defgroup   RTOS_TASKS rtos_tasks.cpp
+ *
+ * @brief      This file implements rtos tasks for various modes of operation.
+ *
+ * @author     Garrett Wells, Parker Piedmont
+ * @date       2022
+ */
 #ifndef __RTOS_TASKS_H__
 #define __RTOS_TASKS_H__
 

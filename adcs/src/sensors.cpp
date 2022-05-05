@@ -17,6 +17,9 @@ SemaphoreHandle_t PDsemphr;
 
 /* HARDWARE INIT FUNCTIONS ================================================== */
 
+/**
+ * @brief      Initializes the IMU I2C connection
+ */
 void initIMU(void)
 {
 	/**
@@ -26,23 +29,23 @@ void initIMU(void)
     IMU1.begin(SERCOM_I2C, AD0_VAL);
     while (IMU1.status != ICM_20948_Stat_Ok);  // wait for initialization to
                                                // complete
-#if DEBUG
-    SERCOM_USB.print("[system init]\tIMU1 initialized\r\n");
-#endif
-
-#if NUM_IMUS >= 2
-	/**
-	 * Initialize second IMU
-	 * Address: 0x68 or 0x69
-	 */
-    IMU2.begin(SERCOM_I2C, AD0_VAL^1);  // initialize other IMU with opposite
-										// value for bit 0
-    while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
-                                               // complete
 	#if DEBUG
-    SERCOM_USB.print("[system init]\tIMU2 initialized\r\n");
+	    SERCOM_USB.print("[system init]\tIMU1 initialized\r\n");
 	#endif
-#endif
+
+	#if NUM_IMUS >= 2
+		/**
+		 * Initialize second IMU
+		 * Address: 0x68 or 0x69
+		 */
+	    IMU2.begin(SERCOM_I2C, AD0_VAL^1);  // initialize other IMU with opposite
+											// value for bit 0
+	    while (IMU2.status != ICM_20948_Stat_Ok);  // wait for initialization to
+	                                               // complete
+		#if DEBUG
+		    SERCOM_USB.print("[system init]\tIMU2 initialized\r\n");
+		#endif
+	#endif
 
 	IMUq = xQueueCreate(1, sizeof(IMUdata));
 	IMUdata dummy_init;
@@ -56,11 +59,14 @@ void initIMU(void)
 	xSemaphoreGive(IMUsemphr);
 
 	xTaskCreate(readIMU, "IMU read", 256, NULL, 1, NULL);
-#if DEBUG
-	SERCOM_USB.print("[rtos]\t\tCreated IMU read task\r\n");
-#endif
+	#if DEBUG
+		SERCOM_USB.print("[rtos]\t\tCreated IMU read task\r\n");
+	#endif
 }
 
+/**
+ * @brief      Initializes the INA209 sensor I2C connection
+ */
 void initINA(void)
 {
 	/**
@@ -84,9 +90,9 @@ void initINA(void)
 	 */
     ina209.writeCal(0x7fff);
     
-#if DEBUG
-    SERCOM_USB.print("[system init]\tINA209 initialized\r\n");
-#endif
+	#if DEBUG
+	    SERCOM_USB.print("[system init]\tINA209 initialized\r\n");
+	#endif
 
 	INAq = xQueueCreate(1, sizeof(INAdata));
 	INAdata dummy_init;
@@ -100,16 +106,24 @@ void initINA(void)
 	// xTaskCreate(readINA_rtos, "INA read", 256, NULL, 1, NULL);
 }
 
+/**
+ * @brief      Initializes the sun sensors and pin connections
+ */
 void initSunSensors(void)
 {
 	sunSensors.init();
-#if DEBUG
-	SERCOM_USB.print("[system init]\tSun sensors initialized\r\n");
-#endif
+	#if DEBUG
+		SERCOM_USB.print("[system init]\tSun sensors initialized\r\n");
+	#endif
 }
 
 /* SENSOR READING FUNCTIONS ================================================= */
 
+/**
+ * @brief      Reads voltage, current, etc from INA209
+ *
+ * @return     A struct containing voltage, current, etc.
+ */
 INAdata readINA(void)
 {
 	INAdata data;
@@ -123,19 +137,24 @@ INAdata readINA(void)
 	data.voltage = v_raw / 1000.0f;
 	data.current = i_raw / 10.0f;
 
-#if DEBUG
-	SERCOM_USB.print("[readINA]\tBus voltage: ");
-	SERCOM_USB.print(data.voltage);
-	SERCOM_USB.print("V\r\n");
+	#if DEBUG
+		SERCOM_USB.print("[readINA]\tBus voltage: ");
+		SERCOM_USB.print(data.voltage);
+		SERCOM_USB.print("V\r\n");
 
-	SERCOM_USB.print("[readINA]\tCurrent: ");
-	SERCOM_USB.print(data.current);
-	SERCOM_USB.print("mA\r\n");
-#endif
+		SERCOM_USB.print("[readINA]\tCurrent: ");
+		SERCOM_USB.print(data.current);
+		SERCOM_USB.print("mA\r\n");
+	#endif
 
 	return data;
 }
 
+/**
+ * @brief      Read analog photodiode values and store as float in struct
+ *
+ * @return     The analog values stored in a struct
+ */
 PDdata readPD(void)
 {
 	PDdata data;
@@ -146,33 +165,38 @@ PDdata readPD(void)
 		data.data[channel] = sunSensors.read(channel);
 	}
 
-// #if DEBUG
-// 	SERCOM_USB.print("[readPD]\tSun sensors: [ [");
-// 	SERCOM_USB.print(data.x_pos);
-// 	SERCOM_USB.print(", ");
-// 	SERCOM_USB.print(data.x_neg);
-// 	SERCOM_USB.print("], [");
-// 	SERCOM_USB.print(data.y_pos);
-// 	SERCOM_USB.print(", ");
-// 	SERCOM_USB.print(data.y_neg);
-// 	SERCOM_USB.print("], [");
-// 	SERCOM_USB.print(data.z_pos);
-// 	SERCOM_USB.print(", ");
-// 	SERCOM_USB.print(data.z_neg);
-// 	SERCOM_USB.print("] ]\r\n");
-// #endif
+	// #if DEBUG
+	// 	SERCOM_USB.print("[readPD]\tSun sensors: [ [");
+	// 	SERCOM_USB.print(data.x_pos);
+	// 	SERCOM_USB.print(", ");
+	// 	SERCOM_USB.print(data.x_neg);
+	// 	SERCOM_USB.print("], [");
+	// 	SERCOM_USB.print(data.y_pos);
+	// 	SERCOM_USB.print(", ");
+	// 	SERCOM_USB.print(data.y_neg);
+	// 	SERCOM_USB.print("], [");
+	// 	SERCOM_USB.print(data.z_pos);
+	// 	SERCOM_USB.print(", ");
+	// 	SERCOM_USB.print(data.z_neg);
+	// 	SERCOM_USB.print("] ]\r\n");
+	// #endif
 
 	return data;
 }
 
 /* SENSOR RTOS TASKS ======================================================== */
 
+/**
+ * @brief      Reads IMU data, gyroscope (deg/sec) and magentometer (uTeslas) and stores in struct
+ *
+ * @param      pvParameters  RTOS task input params, not used
+ */
 void readIMU(void *pvParameters)
 {
 	ICM_20948_I2C *sensor_ptr1 = &IMU1;
-#if NUM_IMUS >= 2
-	ICM_20948_I2C *sensor_ptr2 = &IMU2;
-#endif
+	#if NUM_IMUS >= 2
+		ICM_20948_I2C *sensor_ptr2 = &IMU2;
+	#endif
 
 	IMUdata result;
 
@@ -206,65 +230,65 @@ void readIMU(void *pvParameters)
 	
 	while (1)
 	{
-#if NUM_IMUS >= 2
-		if (IMU1.dataReady() && IMU2.dataReady())
-		{
-#else
-		if (IMU1.dataReady())
-		{
-#endif
-			xSemaphoreTake(IMUsemphr, 0);
-			IMU1.getAGMT();
-#if NUM_IMUS >= 2
-			IMU2.getAGMT();
-#endif
-			xSemaphoreGive(IMUsemphr);
-
-			result.magX = sensor_ptr1->magX();
-			result.magY = sensor_ptr1->magY();
-			result.magZ = sensor_ptr1->magZ();
-
-#if NUM_IMUS >= 2
-			gyrXavgs[avgcntr] += ((sensor_ptr1->gyrX() + sensor_ptr2->gyrX()) / 2);
-			gyrYavgs[avgcntr] += ((sensor_ptr1->gyrY() + sensor_ptr2->gyrY()) / 2);
-			gyrZavgs[avgcntr] += ((sensor_ptr1->gyrZ() + sensor_ptr2->gyrZ()) / 2);
-#else
-			gyrXavgs[avgcntr] += sensor_ptr1->gyrX();
-			gyrYavgs[avgcntr] += sensor_ptr1->gyrY();
-			gyrZavgs[avgcntr] += sensor_ptr1->gyrZ();
-#endif
-
-			readcntr++;
-
-			if (readcntr >= DECIMATION)
+		#if NUM_IMUS >= 2
+			if (IMU1.dataReady() && IMU2.dataReady())
 			{
-				gyrXavgs[avgcntr] /= (float)DECIMATION;
-				gyrYavgs[avgcntr] /= (float)DECIMATION;
-				gyrZavgs[avgcntr] /= (float)DECIMATION;
+		#else
+			if (IMU1.dataReady())
+			{
+		#endif
+				xSemaphoreTake(IMUsemphr, 0);
+				IMU1.getAGMT();
+		#if NUM_IMUS >= 2
+				IMU2.getAGMT();
+		#endif
+				xSemaphoreGive(IMUsemphr);
 
-				for (int i = 0; i < NUM_DECIMATIONS; i++)
+				result.magX = sensor_ptr1->magX();
+				result.magY = sensor_ptr1->magY();
+				result.magZ = sensor_ptr1->magZ();
+
+			#if NUM_IMUS >= 2
+				gyrXavgs[avgcntr] += ((sensor_ptr1->gyrX() + sensor_ptr2->gyrX()) / 2);
+				gyrYavgs[avgcntr] += ((sensor_ptr1->gyrY() + sensor_ptr2->gyrY()) / 2);
+				gyrZavgs[avgcntr] += ((sensor_ptr1->gyrZ() + sensor_ptr2->gyrZ()) / 2);
+			#else
+				gyrXavgs[avgcntr] += sensor_ptr1->gyrX();
+				gyrYavgs[avgcntr] += sensor_ptr1->gyrY();
+				gyrZavgs[avgcntr] += sensor_ptr1->gyrZ();
+			#endif
+
+				readcntr++;
+
+				if (readcntr >= DECIMATION)
 				{
-					gyrXresult += gyrXavgs[i];
-					gyrYresult += gyrYavgs[i];
-					gyrZresult += gyrZavgs[i];
+					gyrXavgs[avgcntr] /= (float)DECIMATION;
+					gyrYavgs[avgcntr] /= (float)DECIMATION;
+					gyrZavgs[avgcntr] /= (float)DECIMATION;
+
+					for (int i = 0; i < NUM_DECIMATIONS; i++)
+					{
+						gyrXresult += gyrXavgs[i];
+						gyrYresult += gyrYavgs[i];
+						gyrZresult += gyrZavgs[i];
+					}
+
+					gyrXresult /= (float)NUM_DECIMATIONS;
+					gyrYresult /= (float)NUM_DECIMATIONS;
+					gyrZresult /= (float)NUM_DECIMATIONS;
+
+					result.gyrX = gyrXresult;
+					result.gyrY = gyrYresult;
+					result.gyrZ = gyrZresult;
+
+					avgcntr = (avgcntr + 1) % NUM_DECIMATIONS;
+
+					gyrXavgs[avgcntr] = 0.0f;
+					gyrYavgs[avgcntr] = 0.0f;
+					gyrZavgs[avgcntr] = 0.0f;
+
+					readcntr = 0;
 				}
-
-				gyrXresult /= (float)NUM_DECIMATIONS;
-				gyrYresult /= (float)NUM_DECIMATIONS;
-				gyrZresult /= (float)NUM_DECIMATIONS;
-
-				result.gyrX = gyrXresult;
-				result.gyrY = gyrYresult;
-				result.gyrZ = gyrZresult;
-
-				avgcntr = (avgcntr + 1) % NUM_DECIMATIONS;
-
-				gyrXavgs[avgcntr] = 0.0f;
-				gyrYavgs[avgcntr] = 0.0f;
-				gyrZavgs[avgcntr] = 0.0f;
-
-				readcntr = 0;
-			}
 		}
 
 		xQueueOverwrite(IMUq, &result);
@@ -273,6 +297,11 @@ void readIMU(void *pvParameters)
 	}
 }
 
+/**
+ * @brief      Read INA209 as an RTOS task, not currently implemented, left until needed.
+ *
+ * @param      pvParameters  RTOS params, not currently used
+ */
 void readINA_rtos(void *pvParameters)
 {
 
@@ -280,6 +309,11 @@ void readINA_rtos(void *pvParameters)
 
 /* PRINTING FUNCTIONS ======================================================= */
 
+/**
+ * @brief      Print uint16_t to serial usb connection
+ *
+ * @param[in]  val   The value to print
+ */
 void printPaddedInt16b(int16_t val)
 {
 	if (val > 0)

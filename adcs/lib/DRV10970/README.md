@@ -1,0 +1,2 @@
+# DRV10970 Motor Driver
+Motor driver for controlling the flywheel on the ADCS system. This motor driver has sensors that can be used to detect phase of the motor and report rotation speed in terms of ticks.

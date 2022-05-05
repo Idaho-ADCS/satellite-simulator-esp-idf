@@ -1,7 +1,12 @@
 #include "ADCSPhotodiodeArray.h"
 
 /*
- * Configure the pins attached to the multiplexer (a-c) as outputs and the pin on analog input as an input.
+ * @brief 		Configure the pins attached to the multiplexer (a-c) as outputs and the pin on analog input as an input.
+ *
+ * @param[in]  analog_input  The analog input pin the sensors are multiplexed with
+ * @param[in]  a             Pin channel A of the multiplexer
+ * @param[in]  b             Pin channel B of the multiplexer
+ * @param[in]  c             Pin channel C of the multiplexer
  */
 ADCSPhotodiodeArray::ADCSPhotodiodeArray(uint8_t analog_input, uint8_t a, uint8_t b, uint8_t c)
 {
@@ -11,6 +16,9 @@ ADCSPhotodiodeArray::ADCSPhotodiodeArray(uint8_t analog_input, uint8_t a, uint8_
 	_c = c;
 }
 
+/**
+ * @brief      Setup the pin states and configure ADC to 12 bit resolution
+ */
 void ADCSPhotodiodeArray::init(void)
 {
 	// configure digital pins
@@ -30,7 +38,7 @@ void ADCSPhotodiodeArray::init(void)
 	pinMode(_input, INPUT);
 }
 
-/*
+/**
  * Read the value measured on one of the 6 multiplexer channels.
  *
  * @param[in]  channel  The channel/coordinate related sensor. Can be PhotodiodeCoordinate from ADCSPhotodiodeArray.h.
