@@ -4,6 +4,12 @@ This is the original satellite simulator, and it is only compatible with microco
 # Usage
 1. Clone this repo. `git clone https://github.com/Idaho-ADCS/satellite-simulator-esp-idf`
 2. Install ESP-IDF through [Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=espressif.esp-idf-extension) or an [executable](https://dl.espressif.com/dl/esp-idf/)
-3. Set target to appropriate ESP32 chipset
-4. Set communication port
-5. Build, flash, and monitor
+3. Run the following commands:
+````
+cd front/web-demo
+npm install
+npm run build
+````
+5. Set target to appropriate ESP32 chipset
+6. Set communication port
+7. Build, flash, and monitor
